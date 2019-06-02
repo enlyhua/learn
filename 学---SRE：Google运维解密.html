@@ -1,0 +1,2521 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width initial-scale=1'>
+    <title>学---SRE：Google运维解密</title>
+    <link href='https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext'
+          rel='stylesheet' type='text/css'/>
+    <style type='text/css'>html {
+        overflow-x: initial !important;
+    }
+
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --select-text-bg-color: #B5D6FC;
+        --select-text-font-color: auto;
+        --monospace: "Lucida Console", Consolas, "Courier", monospace;
+    }
+
+    .left-div
+    {
+        height: 80%; /*目录框的高度*/
+        float:left;/*目录框的位置*/
+        overflow-y:scroll;/*目录框添加滚动条*/
+        padding-right: 10px;
+        position: fixed;/*目录框相对浏览器进行定位*/
+        width:17%;/*目录框的宽度*/
+    }
+    /*右边正文的样式*/
+    .right-div
+    {
+        float:right;/*正文的位置*/
+        padding-left: 10px;/*边距*/
+        width:80%;/*正文的宽度*/
+    }
+
+    body {
+        /*width: 45em;*/
+        border: 1px solid #ddd;
+        outline: 1300px solid #fff;
+        margin: 16px auto;
+    }
+
+    html {
+        font-size: 14px;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+
+    iframe {
+        margin: auto;
+    }
+
+    a.url {
+        word-break: break-all;
+    }
+
+    a:active, a:hover {
+        outline: 0px;
+    }
+
+    .in-text-selection, ::selection {
+        text-shadow: none;
+        background: var(--select-text-bg-color);
+        color: var(--select-text-font-color);
+    }
+
+    #write {
+        margin: 0px auto;
+        height: auto;
+        width: inherit;
+        word-break: normal;
+        word-wrap: break-word;
+        position: relative;
+        white-space: normal;
+        overflow-x: visible;
+        padding-top: 40px;
+    }
+
+    #write.first-line-indent p {
+        text-indent: 2em;
+    }
+
+    #write.first-line-indent li p, #write.first-line-indent p * {
+        text-indent: 0px;
+    }
+
+    #write.first-line-indent li {
+        margin-left: 2em;
+    }
+
+    .for-image #write {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    body.typora-export {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .typora-export .footnote-line, .typora-export li, .typora-export p {
+        white-space: pre-wrap;
+    }
+
+    @media screen and (max-width: 500px) {
+        body.typora-export {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+
+        #write {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .CodeMirror-sizer {
+            margin-left: 0px !important;
+        }
+
+        .CodeMirror-gutters {
+            display: none !important;
+        }
+    }
+
+    #write li > figure:last-child {
+        margin-bottom: 0.5rem;
+    }
+
+    #write ol, #write ul {
+        position: relative;
+    }
+
+    img {
+        max-width: 100%;
+        vertical-align: middle;
+    }
+
+    button, input, select, textarea {
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        font-style: inherit;
+        font-variant-caps: inherit;
+        font-weight: inherit;
+        font-stretch: inherit;
+        line-height: inherit;
+    }
+
+    input[type="checkbox"], input[type="radio"] {
+        line-height: normal;
+        padding: 0px;
+    }
+
+    *, ::after, ::before {
+        box-sizing: border-box;
+    }
+
+    #write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre {
+        width: inherit;
+    }
+
+    #write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p {
+        position: relative;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        break-after: avoid-page;
+        break-inside: avoid;
+        orphans: 2;
+    }
+
+    p {
+        orphans: 4;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+    }
+
+    h3 {
+        font-size: 1.6rem;
+    }
+
+    h4 {
+        font-size: 1.4rem;
+    }
+
+    h5 {
+        font-size: 1.2rem;
+    }
+
+    h6 {
+        font-size: 1rem;
+    }
+
+    .md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .md-blockmeta {
+        color: rgb(204, 204, 204);
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    a {
+        cursor: pointer;
+    }
+
+    sup.md-footnote {
+        padding: 2px 4px;
+        background-color: rgba(238, 238, 238, 0.701961);
+        color: rgb(85, 85, 85);
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        cursor: pointer;
+    }
+
+    sup.md-footnote a, sup.md-footnote a:hover {
+        color: inherit;
+        text-transform: inherit;
+        text-decoration: inherit;
+    }
+
+    #write input[type="checkbox"] {
+        cursor: pointer;
+        width: inherit;
+        height: inherit;
+    }
+
+    figure {
+        overflow-x: auto;
+        margin: 1.2em 0px;
+        max-width: calc(100% + 16px);
+        padding: 0px;
+    }
+
+    figure > table {
+        margin: 0px !important;
+    }
+
+    tr {
+        break-inside: avoid;
+        break-after: auto;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0px;
+        width: 100%;
+        overflow: auto;
+        break-inside: auto;
+        text-align: left;
+    }
+
+    table.md-table td {
+        min-width: 32px;
+    }
+
+    .CodeMirror-gutters {
+        border-right-width: 0px;
+        background-color: inherit;
+    }
+
+    .CodeMirror-linenumber {
+    }
+
+    .CodeMirror {
+        text-align: left;
+    }
+
+    .CodeMirror-placeholder {
+        opacity: 0.3;
+    }
+
+    .CodeMirror pre {
+        padding: 0px 4px;
+    }
+
+    .CodeMirror-lines {
+        padding: 0px;
+    }
+
+    div.hr:focus {
+        cursor: none;
+    }
+
+    #write pre {
+        white-space: pre-wrap;
+    }
+
+    #write.fences-no-line-wrapping pre {
+        white-space: pre;
+    }
+
+    #write pre.ty-contain-cm {
+        white-space: normal;
+    }
+
+    .CodeMirror-gutters {
+        margin-right: 4px;
+    }
+
+    .md-fences {
+        font-size: 0.9rem;
+        display: block;
+        break-inside: avoid;
+        text-align: left;
+        overflow: visible;
+        white-space: pre;
+        background-image: inherit;
+        background-size: inherit;
+        background-attachment: inherit;
+        background-origin: inherit;
+        background-clip: inherit;
+        background-color: inherit;
+        position: relative !important;
+        background-position: inherit inherit;
+        background-repeat: inherit inherit;
+    }
+
+    .md-diagram-panel {
+        width: 100%;
+        margin-top: 10px;
+        text-align: center;
+        padding-top: 0px;
+        padding-bottom: 8px;
+        overflow-x: auto;
+    }
+
+    #write .md-fences.mock-cm {
+        white-space: pre-wrap;
+    }
+
+    .md-fences.md-fences-with-lineno {
+        padding-left: 0px;
+    }
+
+    #write.fences-no-line-wrapping .md-fences.mock-cm {
+        white-space: pre;
+        overflow-x: auto;
+    }
+
+    .md-fences.mock-cm.md-fences-with-lineno {
+        padding-left: 8px;
+    }
+
+    .CodeMirror-line, twitterwidget {
+        break-inside: avoid;
+    }
+
+    .footnotes {
+        opacity: 0.8;
+        font-size: 0.9rem;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    .footnotes + .footnotes {
+        margin-top: 0px;
+    }
+
+    .md-reset {
+        margin: 0px;
+        padding: 0px;
+        border: 0px;
+        outline: 0px;
+        vertical-align: top;
+        text-decoration: none;
+        text-shadow: none;
+        float: none;
+        position: static;
+        width: auto;
+        height: auto;
+        white-space: nowrap;
+        cursor: inherit;
+        line-height: normal;
+        font-weight: 400;
+        text-align: left;
+        box-sizing: content-box;
+        direction: ltr;
+        background-position: 0px 0px;
+        background-repeat: initial initial;
+    }
+
+    li div {
+        padding-top: 0px;
+    }
+
+    blockquote {
+        margin: 1rem 0px;
+    }
+
+    li .mathjax-block, li p {
+        margin: 0.5rem 0px;
+    }
+
+    li {
+        margin: 0px;
+        position: relative;
+    }
+
+    blockquote > :last-child {
+        margin-bottom: 0px;
+    }
+
+    blockquote > :first-child, li > :first-child {
+        margin-top: 0px;
+    }
+
+    .footnotes-area {
+        color: rgb(136, 136, 136);
+        margin-top: 0.714rem;
+        padding-bottom: 0.143rem;
+        white-space: normal;
+    }
+
+    #write .footnote-line {
+        white-space: pre-wrap;
+    }
+
+    @media print {
+        html {
+            border: 1px solid transparent;
+            height: 99%;
+            break-after: avoid-page;
+            break-before: avoid-page;
+        }
+
+        #write {
+            margin-top: 0px;
+            padding-top: 0px;
+            border-color: transparent !important;
+        }
+
+        .typora-export * {
+            -webkit-print-color-adjust: exact;
+        }
+
+        html.blink-to-pdf {
+            font-size: 13px;
+        }
+
+        .typora-export #write {
+            padding-left: 32px;
+            padding-right: 32px;
+            padding-bottom: 0px;
+            break-after: avoid-page;
+        }
+
+        .typora-export #write::after {
+            height: 0px;
+        }
+
+        @page {
+            margin: 20mm 0px;
+        }
+    }
+
+    .footnote-line {
+        margin-top: 0.714em;
+        font-size: 0.7em;
+    }
+
+    a img, img a {
+        cursor: pointer;
+    }
+
+    pre.md-meta-block {
+        font-size: 0.8rem;
+        min-height: 0.8rem;
+        white-space: pre-wrap;
+        background-color: rgb(204, 204, 204);
+        display: block;
+        overflow-x: hidden;
+        background-position: initial initial;
+        background-repeat: initial initial;
+    }
+
+    p > .md-image:only-child:not(.md-img-error) img, p > img:only-child {
+        display: block;
+        margin: auto;
+    }
+
+    p > .md-image:only-child {
+        display: inline-block;
+        width: 100%;
+    }
+
+    #write .MathJax_Display {
+        margin: 0.8em 0px 0px;
+    }
+
+    .md-math-block {
+        width: 100%;
+    }
+
+    .md-math-block:not(:empty)::after {
+        display: none;
+    }
+
+    [contenteditable="true"]:active, [contenteditable="true"]:focus {
+        outline: 0px;
+        box-shadow: none;
+    }
+
+    .md-task-list-item {
+        position: relative;
+        list-style-type: none;
+    }
+
+    .task-list-item.md-task-list-item {
+        padding-left: 0px;
+    }
+
+    .md-task-list-item > input {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        margin-left: -1.2em;
+        margin-top: calc(1em - 10px);
+        border: none;
+    }
+
+    .math {
+        font-size: 1rem;
+    }
+
+    .md-toc {
+        min-height: 3.58rem;
+        position: relative;
+        font-size: 0.9rem;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .md-toc-content {
+        position: relative;
+        margin-left: 0px;
+    }
+
+    .md-toc-content::after, .md-toc::after {
+        display: none;
+    }
+
+    .md-toc-item {
+        display: block;
+        color: rgb(65, 131, 196);
+    }
+
+    .md-toc-item a {
+        text-decoration: none;
+    }
+
+    .md-toc-inner:hover {
+        text-decoration: underline;
+    }
+
+    .md-toc-inner {
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .md-toc-h1 .md-toc-inner {
+        margin-left: 0px;
+        font-weight: 700;
+    }
+
+    .md-toc-h2 .md-toc-inner {
+        margin-left: 2em;
+    }
+
+    .md-toc-h3 .md-toc-inner {
+        margin-left: 4em;
+    }
+
+    .md-toc-h4 .md-toc-inner {
+        margin-left: 6em;
+    }
+
+    .md-toc-h5 .md-toc-inner {
+        margin-left: 8em;
+    }
+
+    .md-toc-h6 .md-toc-inner {
+        margin-left: 10em;
+    }
+
+    @media screen and (max-width: 48em) {
+        .md-toc-h3 .md-toc-inner {
+            margin-left: 3.5em;
+        }
+
+        .md-toc-h4 .md-toc-inner {
+            margin-left: 5em;
+        }
+
+        .md-toc-h5 .md-toc-inner {
+            margin-left: 6.5em;
+        }
+
+        .md-toc-h6 .md-toc-inner {
+            margin-left: 8em;
+        }
+    }
+
+    a.md-toc-inner {
+        font-size: inherit;
+        font-style: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+    }
+
+    .footnote-line a:not(.reversefootnote) {
+        color: inherit;
+    }
+
+    .md-attr {
+        display: none;
+    }
+
+    .md-fn-count::after {
+        content: ".";
+    }
+
+    code, pre, samp, tt {
+        font-family: var(--monospace);
+    }
+
+    kbd {
+        margin: 0px 0.1em;
+        padding: 0.1em 0.6em;
+        font-size: 0.8em;
+        color: rgb(36, 39, 41);
+        background-color: rgb(255, 255, 255);
+        border: 1px solid rgb(173, 179, 185);
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+        box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset;
+        white-space: nowrap;
+        vertical-align: middle;
+        background-position: initial initial;
+        background-repeat: initial initial;
+    }
+
+    .md-comment {
+        color: rgb(162, 127, 3);
+        opacity: 0.8;
+        font-family: var(--monospace);
+    }
+
+    code {
+        text-align: left;
+    }
+
+    a.md-print-anchor {
+        white-space: pre !important;
+        border: none !important;
+        display: inline-block !important;
+        position: absolute !important;
+        width: 1px !important;
+        right: 0px !important;
+        outline: 0px !important;
+        text-shadow: initial !important;
+        background-position: 0px 0px !important;
+        background-repeat: initial initial !important;
+    }
+
+    .md-inline-math .MathJax_SVG .noError {
+        display: none !important;
+    }
+
+    .html-for-mac .inline-math-svg .MathJax_SVG {
+        vertical-align: 0.2px;
+    }
+
+    .md-math-block .MathJax_SVG_Display {
+        text-align: center;
+        margin: 0px;
+        position: relative;
+        text-indent: 0px;
+        max-width: none;
+        max-height: none;
+        min-height: 0px;
+        min-width: 100%;
+        width: auto;
+        overflow-y: hidden;
+        display: block !important;
+    }
+
+    .MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display {
+        width: auto;
+        margin: inherit;
+        display: inline-block !important;
+    }
+
+    .MathJax_SVG .MJX-monospace {
+        font-family: var(--monospace);
+    }
+
+    .MathJax_SVG .MJX-sans-serif {
+        font-family: sans-serif;
+    }
+
+    .MathJax_SVG {
+        display: inline;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        zoom: 90%;
+        text-indent: 0px;
+        text-align: left;
+        text-transform: none;
+        letter-spacing: normal;
+        word-spacing: normal;
+        word-wrap: normal;
+        white-space: nowrap;
+        float: none;
+        direction: ltr;
+        max-width: none;
+        max-height: none;
+        min-width: 0px;
+        min-height: 0px;
+        border: 0px;
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .MathJax_SVG * {
+        transition: none;
+    }
+
+    .MathJax_SVG_Display svg {
+        vertical-align: middle !important;
+        margin-bottom: 0px !important;
+    }
+
+    .os-windows.monocolor-emoji .md-emoji {
+        font-family: "Segoe UI Symbol", sans-serif;
+    }
+
+    .md-diagram-panel > svg {
+        max-width: 100%;
+    }
+
+    [lang="mermaid"] svg, [lang="flow"] svg {
+        max-width: 100%;
+    }
+
+    [lang="mermaid"] .node text {
+        font-size: 1rem;
+    }
+
+    table tr th {
+        border-bottom-width: 0px;
+    }
+
+    video {
+        max-width: 100%;
+        display: block;
+        margin: 0px auto;
+    }
+
+    iframe {
+        max-width: 100%;
+        width: 100%;
+        border: none;
+    }
+
+    .highlight td, .highlight tr {
+        border: 0px;
+    }
+
+    :root {
+        --side-bar-bg-color: #fafafa;
+        --control-text-color: #777;
+    }
+
+    @include-when-export url(https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext);
+
+    html {
+        font-size: 16px;
+    }
+
+
+
+    #write {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 30px;
+        padding-bottom: 100px;
+    }
+
+    #write > ul:first-child,
+    #write > ol:first-child {
+        margin-top: 30px;
+    }
+
+    a {
+        color: #4183C4;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        position: relative;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        font-weight: bold;
+        line-height: 1.4;
+        cursor: text;
+    }
+
+    h1:hover a.anchor,
+    h2:hover a.anchor,
+    h3:hover a.anchor,
+    h4:hover a.anchor,
+    h5:hover a.anchor,
+    h6:hover a.anchor {
+        text-decoration: none;
+    }
+
+    h1 tt,
+    h1 code {
+        font-size: inherit;
+    }
+
+    h2 tt,
+    h2 code {
+        font-size: inherit;
+    }
+
+    h3 tt,
+    h3 code {
+        font-size: inherit;
+    }
+
+    h4 tt,
+    h4 code {
+        font-size: inherit;
+    }
+
+    h5 tt,
+    h5 code {
+        font-size: inherit;
+    }
+
+    h6 tt,
+    h6 code {
+        font-size: inherit;
+    }
+
+    h1 {
+        padding-bottom: .3em;
+        font-size: 2.25em;
+        line-height: 1.2;
+        border-bottom: 1px solid #eee;
+    }
+
+    h2 {
+        padding-bottom: .3em;
+        font-size: 1.75em;
+        line-height: 1.225;
+        border-bottom: 1px solid #eee;
+    }
+
+    h3 {
+        font-size: 1.5em;
+        line-height: 1.43;
+    }
+
+    h4 {
+        font-size: 1.25em;
+    }
+
+    h5 {
+        font-size: 1em;
+    }
+
+    h6 {
+        font-size: 1em;
+        color: #777;
+    }
+
+    p,
+    blockquote,
+    ul,
+    ol,
+    dl,
+    table {
+        margin: 0.8em 0;
+    }
+
+    li > ol,
+    li > ul {
+        margin: 0 0;
+    }
+
+    hr {
+        height: 2px;
+        padding: 0;
+        margin: 16px 0;
+        background-color: #e7e7e7;
+        border: 0 none;
+        overflow: hidden;
+        box-sizing: content-box;
+    }
+
+    li p.first {
+        display: inline-block;
+    }
+
+    ul,
+    ol {
+        padding-left: 30px;
+    }
+
+    ul:first-child,
+    ol:first-child {
+        margin-top: 0;
+    }
+
+    ul:last-child,
+    ol:last-child {
+        margin-bottom: 0;
+    }
+
+    blockquote {
+        border-left: 4px solid #dfe2e5;
+        padding: 0 15px;
+        color: #777777;
+    }
+
+    blockquote blockquote {
+        padding-right: 0;
+    }
+
+    table {
+        padding: 0;
+        word-break: initial;
+    }
+
+    table tr {
+        border-top: 1px solid #dfe2e5;
+        margin: 0;
+        padding: 0;
+    }
+
+    table tr:nth-child(2n),
+    thead {
+        background-color: #f8f8f8;
+    }
+
+    table tr th {
+        font-weight: bold;
+        border: 1px solid #dfe2e5;
+        border-bottom: 0;
+        text-align: left;
+        margin: 0;
+        padding: 6px 13px;
+    }
+
+    table tr td {
+        border: 1px solid #dfe2e5;
+        text-align: left;
+        margin: 0;
+        padding: 6px 13px;
+    }
+
+    table tr th:first-child,
+    table tr td:first-child {
+        margin-top: 0;
+    }
+
+    table tr th:last-child,
+    table tr td:last-child {
+        margin-bottom: 0;
+    }
+
+    .CodeMirror-lines {
+        padding-left: 4px;
+    }
+
+    .code-tooltip {
+        box-shadow: 0 1px 1px 0 rgba(0, 28, 36, .3);
+        border-top: 1px solid #eef2f2;
+    }
+
+    .md-fences,
+    code,
+    tt {
+        border: 1px solid #e7eaed;
+        background-color: #f8f8f8;
+        border-radius: 3px;
+        padding: 0;
+        padding: 2px 4px 0px 4px;
+        font-size: 0.9em;
+    }
+
+    code {
+        background-color: #f3f4f4;
+        padding: 0 2px 0 2px;
+    }
+
+    .md-fences {
+        margin-bottom: 15px;
+        margin-top: 15px;
+        padding-top: 8px;
+        padding-bottom: 6px;
+    }
+
+    .md-task-list-item > input {
+        margin-left: -1.3em;
+    }
+
+    @media print {
+        html {
+            font-size: 13px;
+        }
+
+        table,
+        pre {
+            page-break-inside: avoid;
+        }
+
+        pre {
+            word-wrap: break-word;
+        }
+    }
+
+    .md-fences {
+        background-color: #f8f8f8;
+    }
+
+    #write pre.md-meta-block {
+        padding: 1rem;
+        font-size: 85%;
+        line-height: 1.45;
+        background-color: #f7f7f7;
+        border: 0;
+        border-radius: 3px;
+        color: #777777;
+        margin-top: 0 !important;
+    }
+
+    .mathjax-block > .code-tooltip {
+        bottom: .375rem;
+    }
+
+    .md-mathjax-midline {
+        background: #fafafa;
+    }
+
+    #write > h3.md-focus:before {
+        left: -1.5625rem;
+        top: .375rem;
+    }
+
+    #write > h4.md-focus:before {
+        left: -1.5625rem;
+        top: .285714286rem;
+    }
+
+    #write > h5.md-focus:before {
+        left: -1.5625rem;
+        top: .285714286rem;
+    }
+
+    #write > h6.md-focus:before {
+        left: -1.5625rem;
+        top: .285714286rem;
+    }
+
+    .md-image > .md-meta {
+        /*border: 1px solid #ddd;*/
+        border-radius: 3px;
+        padding: 2px 0px 0px 4px;
+        font-size: 0.9em;
+        color: inherit;
+    }
+
+    .md-tag {
+        color: #a7a7a7;
+        opacity: 1;
+    }
+
+    .md-toc {
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .sidebar-tabs {
+        border-bottom: none;
+    }
+
+    #typora-quick-open {
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+    }
+
+    #typora-quick-open-item {
+        background-color: #FAFAFA;
+        border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    /** focus mode */
+    .on-focus-mode blockquote {
+        border-left-color: rgba(85, 85, 85, 0.12);
+    }
+
+    header, .context-menu, .megamenu-content, footer {
+        font-family: "Segoe UI", "Arial", sans-serif;
+    }
+
+    .file-node-content:hover .file-node-icon,
+    .file-node-content:hover .file-node-open-state {
+        visibility: visible;
+    }
+
+    .mac-seamless-mode #typora-sidebar {
+        background-color: #fafafa;
+        background-color: var(--side-bar-bg-color);
+    }
+
+    .md-lang {
+        color: #b4654d;
+    }
+
+    .html-for-mac .context-menu {
+        --item-hover-bg-color: #E6F0FE;
+    }
+
+    #md-notification .btn {
+        border: 0;
+    }
+
+    .dropdown-menu .divider {
+        border-color: #e5e5e5;
+    }
+
+    .typora-export li, .typora-export p, .typora-export, .footnote-line {
+        white-space: normal;
+    }
+    </style>
+</head>
+<body class='typora-export'>
+
+<div class="left-div">
+    <p class="md-toc-content"><span class="md-toc-item md-toc-h1" data-ref="n2755">
+            <a
+                    class="md-toc-inner" href="#header-n2755">第1 章　介绍</a></span><span class="md-toc-item md-toc-h3"
+                                                                                      data-ref="n2756"><a class="md-toc-inner"
+                                                                                                          href="#header-n2756">系统管理员模式 </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2757"><a class="md-toc-inner"
+                                                              href="#header-n2757">Google 的解决之道：SRE</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2758"><a class="md-toc-inner"
+                                                              href="#header-n2758">SRE 方法论</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2759"><a class="md-toc-inner"
+                                                              href="#header-n2759">确保长期关注研发工作</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2760"><a class="md-toc-inner" href="#header-n2760">在保障服务SLO 的前提下最大化迭代速度</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2761"><a class="md-toc-inner"
+                                                              href="#header-n2761">监控系统</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2762"><a class="md-toc-inner"
+                                                              href="#header-n2762">应急事件处理 </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2763"><a class="md-toc-inner"
+                                                              href="#header-n2763">变更管理</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2764"><a class="md-toc-inner"
+                                                              href="#header-n2764">需求预测和容量规划</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2765"><a class="md-toc-inner"
+                                                              href="#header-n2765">资源部署</a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2766"><a class="md-toc-inner" href="#header-n2766">效率与性能</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2767"><a class="md-toc-inner"
+                                                              href="#header-n2767">小结<span>	</span></a></span><span
+            class="md-toc-item md-toc-h1" data-ref="n2769"><a class="md-toc-inner" href="#header-n2769">第2 章　Google 生产环境：SRE 视角</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2770"><a class="md-toc-inner" href="#header-n2770">硬件   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2771"><a class="md-toc-inner"
+                                                              href="#header-n2771">管理物理服务器的系统管理软件   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2772"><a class="md-toc-inner"
+                                                              href="#header-n2772">管理物理服务器   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2773"><a class="md-toc-inner" href="#header-n2773">存储   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2774"><a class="md-toc-inner" href="#header-n2774">网络   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2775"><a class="md-toc-inner"
+                                                              href="#header-n2775">其他系统软件   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2776"><a class="md-toc-inner"
+                                                              href="#header-n2776">分布式锁服务   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2777"><a class="md-toc-inner"
+                                                              href="#header-n2777">监控与警报系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2778"><a class="md-toc-inner"
+                                                              href="#header-n2778">软件基础设施   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2779"><a class="md-toc-inner"
+                                                              href="#header-n2779">研发环境   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2780"><a class="md-toc-inner"
+                                                              href="#header-n2780">莎士比亚搜索：一个示范服务   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2781"><a class="md-toc-inner" href="#header-n2781">用户请求的处理过程   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2782"><a class="md-toc-inner" href="#header-n2782">任务和数据的组织方式  </a></span><span
+            class="md-toc-item md-toc-h1" data-ref="n2784"><a class="md-toc-inner" href="#header-n2784">第3 章　拥抱风险   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2785"><a class="md-toc-inner"
+                                                              href="#header-n2785">管理风险   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2786"><a class="md-toc-inner"
+                                                              href="#header-n2786">度量服务的风险   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2787"><a class="md-toc-inner" href="#header-n2787">服务的风险容忍度   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2788"><a class="md-toc-inner"
+                                                              href="#header-n2788">辨别消费者服务的风险容忍度   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2789"><a class="md-toc-inner"
+                                                              href="#header-n2789">基础设施服务的风险容忍度   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2790"><a class="md-toc-inner" href="#header-n2790">使用错误预算的目的   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2791"><a class="md-toc-inner" href="#header-n2791">错误预算的构建过程   </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2792"><a class="md-toc-inner" href="#header-n2792">好处   </a></span><span
+            class="md-toc-item md-toc-h1" data-ref="n2794"><a class="md-toc-inner"
+                                                              href="#header-n2794">第4 章　服务质量目标  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2795"><a class="md-toc-inner"
+                                                              href="#header-n2795">服务质量术语  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2796"><a class="md-toc-inner"
+                                                              href="#header-n2796">指标  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2797"><a class="md-toc-inner"
+                                                              href="#header-n2797">目标  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2798"><a class="md-toc-inner"
+                                                              href="#header-n2798">协议  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2799"><a class="md-toc-inner" href="#header-n2799">指标在实践中的应用  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2800"><a class="md-toc-inner"
+                                                              href="#header-n2800">运维人员和最终用户各关心什么  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2801"><a class="md-toc-inner"
+                                                              href="#header-n2801">指标的收集  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2802"><a class="md-toc-inner"
+                                                              href="#header-n2802">汇总  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2803"><a class="md-toc-inner"
+                                                              href="#header-n2803">指标的标准化  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2804"><a class="md-toc-inner" href="#header-n2804">目标在实践中的应用  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2805"><a class="md-toc-inner"
+                                                              href="#header-n2805">目标的定义  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2806"><a class="md-toc-inner"
+                                                              href="#header-n2806">目标的选择  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2807"><a class="md-toc-inner"
+                                                              href="#header-n2807">控制手段  </a></span><span
+            class="md-toc-item md-toc-h5" data-ref="n2808"><a class="md-toc-inner"
+                                                              href="#header-n2808">SLO 可以建立用户预期  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2809"><a class="md-toc-inner" href="#header-n2809">协议在实践中的应用  </a></span><span
+            class="md-toc-item md-toc-h1" data-ref="n3262"><a class="md-toc-inner" href="#header-n3262">第5 章　减少琐事  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2811"><a class="md-toc-inner"
+                                                              href="#header-n2811">琐事的定义  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2812"><a class="md-toc-inner" href="#header-n2812">为什么琐事越少越好  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2813"><a class="md-toc-inner"
+                                                              href="#header-n2813">什么算作工程工作  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2814"><a class="md-toc-inner"
+                                                              href="#header-n2814">琐事繁多是不是一定不好  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2815"><a class="md-toc-inner"
+                                                              href="#header-n2815">小结  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2816"><a class="md-toc-inner"
+                                                              href="#header-n2816">第6 章　分布式系统的监控  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2817"><a class="md-toc-inner"
+                                                              href="#header-n2817">术语定义  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2818"><a class="md-toc-inner"
+                                                              href="#header-n2818">为什么要监控  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2819"><a class="md-toc-inner"
+                                                              href="#header-n2819">对监控系统设置合理预期  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2820"><a class="md-toc-inner"
+                                                              href="#header-n2820">现象与原因  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2821"><a class="md-toc-inner" href="#header-n2821">黑盒监控与白盒监控  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2822"><a class="md-toc-inner"
+                                                              href="#header-n2822">4 个黄金指标  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2823"><a class="md-toc-inner"
+                                                              href="#header-n2823">关于长尾问题  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2824"><a class="md-toc-inner"
+                                                              href="#header-n2824">度量指标时采用合适的精度  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2825"><a class="md-toc-inner" href="#header-n2825">简化，直到不能再简化  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2826"><a class="md-toc-inner" href="#header-n2826">将上述理念整合起来  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2827"><a class="md-toc-inner" href="#header-n2827">监控系统的长期维护  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2828"><a class="md-toc-inner" href="#header-n2828">Bigtable SRE ：警报过多的案例  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2829"><a class="md-toc-inner" href="#header-n2829">Gmail ：可预知的、可脚本化的人工干预  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2830"><a class="md-toc-inner"
+                                                              href="#header-n2830">长跑  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2831"><a class="md-toc-inner"
+                                                              href="#header-n2831">小结  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2832"><a class="md-toc-inner" href="#header-n2832">第7 章　Google 的自动化系统的演进  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2833"><a class="md-toc-inner"
+                                                              href="#header-n2833">自动化的价值  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2834"><a class="md-toc-inner" href="#header-n2834">一致性  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2835"><a class="md-toc-inner" href="#header-n2835">平台性  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2836"><a class="md-toc-inner"
+                                                              href="#header-n2836">修复速度更快  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2837"><a class="md-toc-inner"
+                                                              href="#header-n2837">行动速度更快  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2838"><a class="md-toc-inner"
+                                                              href="#header-n2838">节省时间  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2839"><a class="md-toc-inner" href="#header-n2839">自动化对Google SRE 的价值  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2840"><a class="md-toc-inner"
+                                                              href="#header-n2840">自动化的应用案例  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2841"><a class="md-toc-inner" href="#header-n2841">Google SRE 的自动化使用案例  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2842"><a class="md-toc-inner" href="#header-n2842">自动化分类的层次结构  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2843"><a class="md-toc-inner"
+                                                              href="#header-n2843">让自己脱离工作：自动化所有的东西  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2844"><a class="md-toc-inner" href="#header-n2844">舒缓疼痛：将自动化应用到集群上线中  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2845"><a class="md-toc-inner" href="#header-n2845">使用Prodtest 检测不一致情况  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2846"><a class="md-toc-inner" href="#header-n2846">幂等地解决不一致情况  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2847"><a class="md-toc-inner"
+                                                              href="#header-n2847">专业化倾向  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2848"><a class="md-toc-inner"
+                                                              href="#header-n2848">以服务为导向的集群上线流程  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2849"><a class="md-toc-inner"
+                                                              href="#header-n2849">Borg ：仓库规模计算机的诞生  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2850"><a class="md-toc-inner" href="#header-n2850">可靠性是最基本的功能  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2851"><a class="md-toc-inner"
+                                                              href="#header-n2851">建议  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2852"><a class="md-toc-inner" href="#header-n2852">第8 章　发布工程  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2853"><a class="md-toc-inner"
+                                                              href="#header-n2853">发布工程师的角色  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2854"><a class="md-toc-inner"
+                                                              href="#header-n2854">发布工程哲学  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2855"><a class="md-toc-inner"
+                                                              href="#header-n2855">自服务模型  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2856"><a class="md-toc-inner"
+                                                              href="#header-n2856">追求速度  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2857"><a class="md-toc-inner" href="#header-n2857">密闭性  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2858"><a class="md-toc-inner"
+                                                              href="#header-n2858">强调策略和流程  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2859"><a class="md-toc-inner"
+                                                              href="#header-n2859">持续构建与部署  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2860"><a class="md-toc-inner"
+                                                              href="#header-n2860">构建  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2861"><a class="md-toc-inner"
+                                                              href="#header-n2861">分支  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2862"><a class="md-toc-inner"
+                                                              href="#header-n2862">测试  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2863"><a class="md-toc-inner"
+                                                              href="#header-n2863">打包  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2864"><a class="md-toc-inner"
+                                                              href="#header-n2864">Rapid 系统  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2865"><a class="md-toc-inner"
+                                                              href="#header-n2865">部署  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2866"><a class="md-toc-inner"
+                                                              href="#header-n2866">配置管理  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2867"><a class="md-toc-inner"
+                                                              href="#header-n2867">小结  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2868"><a class="md-toc-inner"
+                                                              href="#header-n2868">不仅仅只对Google 有用  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2869"><a class="md-toc-inner" href="#header-n2869">一开始就进行发布工程  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2870"><a class="md-toc-inner"
+                                                              href="#header-n2870">第9 章　简单化  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2871"><a class="md-toc-inner" href="#header-n2871">系统的稳定性与灵活性  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2872"><a class="md-toc-inner"
+                                                              href="#header-n2872">乏味是一种美德  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2873"><a class="md-toc-inner" href="#header-n2873">我绝对不放弃我的代码  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2874"><a class="md-toc-inner"
+                                                              href="#header-n2874">“负代码行”作为一个指标  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2875"><a class="md-toc-inner"
+                                                              href="#header-n2875">最小 API  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2876"><a class="md-toc-inner" href="#header-n2876">模块化  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2877"><a class="md-toc-inner"
+                                                              href="#header-n2877">发布的简单化  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2878"><a class="md-toc-inner"
+                                                              href="#header-n2878">小结  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2879"><a class="md-toc-inner"
+                                                              href="#header-n2879">第Ⅲ部分　具</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2880"><a class="md-toc-inner" href="#header-n2880">第10 章　基于时间序列数据进行有效报警  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2881"><a class="md-toc-inner"
+                                                              href="#header-n2881">Borgmon 的起源  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2882"><a class="md-toc-inner" href="#header-n2882">应用软件的监控埋点  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2883"><a class="md-toc-inner"
+                                                              href="#header-n2883">监控指标的收集  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2884"><a class="md-toc-inner" href="#header-n2884">时间序列数据的存储  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2885"><a class="md-toc-inner"
+                                                              href="#header-n2885">标签与向量  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2886"><a class="md-toc-inner" href="#header-n2886">Borg 规则计算  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2887"><a class="md-toc-inner" href="#header-n2887">报警   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2888"><a class="md-toc-inner" href="#header-n2888">监控系统的分片机制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2889"><a class="md-toc-inner"
+                                                              href="#header-n2889">黑盒监控   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2890"><a class="md-toc-inner"
+                                                              href="#header-n2890">配置文件的维护   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2891"><a class="md-toc-inner"
+                                                              href="#header-n2891">十年之后   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2892"><a class="md-toc-inner"
+                                                              href="#header-n2892">第11 章　on-call 轮值   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2893"><a class="md-toc-inner" href="#header-n2893">介绍   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2894"><a class="md-toc-inner"
+                                                              href="#header-n2894">on-call 工程师的一天   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2895"><a class="md-toc-inner"
+                                                              href="#header-n2895">on-call 工作平衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2896"><a class="md-toc-inner"
+                                                              href="#header-n2896">数量上保持平衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2897"><a class="md-toc-inner"
+                                                              href="#header-n2897">质量上保持平衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2898"><a class="md-toc-inner"
+                                                              href="#header-n2898">补贴措施   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2899"><a class="md-toc-inner"
+                                                              href="#header-n2899">安全感   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2900"><a class="md-toc-inner" href="#header-n2900">避免运维压力过大   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2901"><a class="md-toc-inner"
+                                                              href="#header-n2901">运维压力过大   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2902"><a class="md-toc-inner"
+                                                              href="#header-n2902">奸诈的敌人—运维压力不够   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2903"><a class="md-toc-inner" href="#header-n2903">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2904"><a class="md-toc-inner"
+                                                              href="#header-n2904">第12 章　有效的故障排查手段   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2905"><a class="md-toc-inner" href="#header-n2905">理论   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2906"><a class="md-toc-inner" href="#header-n2906">实践   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2907"><a class="md-toc-inner"
+                                                              href="#header-n2907">故障报告   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2908"><a class="md-toc-inner" href="#header-n2908">定位   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2909"><a class="md-toc-inner" href="#header-n2909">检查   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2910"><a class="md-toc-inner" href="#header-n2910">诊断   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2911"><a class="md-toc-inner"
+                                                              href="#header-n2911">测试和修复   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2912"><a class="md-toc-inner"
+                                                              href="#header-n2912">神奇的负面结果   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2913"><a class="md-toc-inner" href="#header-n2913">治愈   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2914"><a class="md-toc-inner"
+                                                              href="#header-n2914">案例分析   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2915"><a class="md-toc-inner" href="#header-n2915">使故障排查更简单   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2916"><a class="md-toc-inner" href="#header-n2916">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2917"><a class="md-toc-inner"
+                                                              href="#header-n2917">第13 章　紧急事件响应   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2918"><a class="md-toc-inner"
+                                                              href="#header-n2918">当系统出现问题时怎么办   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2919"><a class="md-toc-inner" href="#header-n2919">测试导致的紧急事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2920"><a class="md-toc-inner" href="#header-n2920">细节   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2921"><a class="md-toc-inner" href="#header-n2921">响应   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2922"><a class="md-toc-inner"
+                                                              href="#header-n2922">事后总结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2923"><a class="md-toc-inner"
+                                                              href="#header-n2923">变更部署带来的紧急事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2924"><a class="md-toc-inner" href="#header-n2924">细节   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2925"><a class="md-toc-inner"
+                                                              href="#header-n2925">事故响应   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2926"><a class="md-toc-inner"
+                                                              href="#header-n2926">事后总结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2927"><a class="md-toc-inner" href="#header-n2927">流程导致的严重事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2928"><a class="md-toc-inner" href="#header-n2928">细节   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2929"><a class="md-toc-inner"
+                                                              href="#header-n2929">灾难响应   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2930"><a class="md-toc-inner"
+                                                              href="#header-n2930">事后总结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2931"><a class="md-toc-inner"
+                                                              href="#header-n2931">所有的问题都有解决方案   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2932"><a class="md-toc-inner"
+                                                              href="#header-n2932">向过去学习，而不是重复它   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2933"><a class="md-toc-inner"
+                                                              href="#header-n2933">为事故保留记录   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2934"><a class="md-toc-inner" href="#header-n2934">提出那些大的，甚至不可能的问题：假如……   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2935"><a class="md-toc-inner"
+                                                              href="#header-n2935">鼓励主动测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2936"><a class="md-toc-inner" href="#header-n2936">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2937"><a class="md-toc-inner"
+                                                              href="#header-n2937">第14 章　紧急事故管理   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2938"><a class="md-toc-inner"
+                                                              href="#header-n2938">无流程管理的紧急事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2939"><a class="md-toc-inner"
+                                                              href="#header-n2939">对这次无流程管理的事故的剖析   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2940"><a class="md-toc-inner" href="#header-n2940">过于关注技术问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2941"><a class="md-toc-inner"
+                                                              href="#header-n2941">沟通不畅   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2942"><a class="md-toc-inner"
+                                                              href="#header-n2942">不请自来   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2943"><a class="md-toc-inner"
+                                                              href="#header-n2943">紧急事故的流程管理要素   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2944"><a class="md-toc-inner"
+                                                              href="#header-n2944">嵌套式职责分离   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2945"><a class="md-toc-inner"
+                                                              href="#header-n2945">控制中心   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2946"><a class="md-toc-inner" href="#header-n2946">实时事故状态文档   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2947"><a class="md-toc-inner" href="#header-n2947">明确公开的职责交接   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2948"><a class="md-toc-inner"
+                                                              href="#header-n2948">一次流程管理良好的事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2949"><a class="md-toc-inner"
+                                                              href="#header-n2949">什么时候对外宣布事故   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2950"><a class="md-toc-inner" href="#header-n2950">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2951"><a class="md-toc-inner" href="#header-n2951">第15 章　事后总结：从失败中学习   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2952"><a class="md-toc-inner"
+                                                              href="#header-n2952">Google 的事后总结哲学   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2953"><a class="md-toc-inner"
+                                                              href="#header-n2953">协作和知识共享   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2954"><a class="md-toc-inner" href="#header-n2954">建立事后总结文化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2955"><a class="md-toc-inner" href="#header-n2955">小结以及不断优化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2956"><a class="md-toc-inner"
+                                                              href="#header-n2956">第16 章　跟踪故障   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2957"><a class="md-toc-inner" href="#header-n2957">Escalator   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2958"><a class="md-toc-inner" href="#header-n2958">Outalator   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2959"><a class="md-toc-inner" href="#header-n2959">聚合   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2960"><a class="md-toc-inner"
+                                                              href="#header-n2960">加标签   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2961"><a class="md-toc-inner" href="#header-n2961">分析   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2962"><a class="md-toc-inner"
+                                                              href="#header-n2962">未预料到的好处   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2963"><a class="md-toc-inner"
+                                                              href="#header-n2963">第17 章　测试可靠性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2964"><a class="md-toc-inner"
+                                                              href="#header-n2964">软件测试的类型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2965"><a class="md-toc-inner"
+                                                              href="#header-n2965">传统测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2966"><a class="md-toc-inner"
+                                                              href="#header-n2966">生产测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2967"><a class="md-toc-inner"
+                                                              href="#header-n2967">创造一个构建和测试环境   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2968"><a class="md-toc-inner"
+                                                              href="#header-n2968">大规模测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2969"><a class="md-toc-inner"
+                                                              href="#header-n2969">测试大规模使用的工具   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2970"><a class="md-toc-inner"
+                                                              href="#header-n2970">针对灾难的测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2971"><a class="md-toc-inner"
+                                                              href="#header-n2971">对速度的渴求   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2972"><a class="md-toc-inner"
+                                                              href="#header-n2972">发布到生产环境   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2973"><a class="md-toc-inner"
+                                                              href="#header-n2973">允许测试失败   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2974"><a class="md-toc-inner" href="#header-n2974">集成   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2975"><a class="md-toc-inner"
+                                                              href="#header-n2975">生产环境探针   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2976"><a class="md-toc-inner" href="#header-n2976">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2977"><a class="md-toc-inner" href="#header-n2977">第18 章　SRE 部门中的软件工程实践   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2978"><a class="md-toc-inner" href="#header-n2978">为什么软件工程项目对SRE 很重要   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2979"><a class="md-toc-inner" href="#header-n2979">Auxon 案例分析：项目背景和要解决的问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2980"><a class="md-toc-inner" href="#header-n2980">传统的容量规划方法   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2981"><a class="md-toc-inner"
+                                                              href="#header-n2981">解决方案：基于意图的容量规划   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2982"><a class="md-toc-inner" href="#header-n2982">基于意图的容量规划   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2983"><a class="md-toc-inner"
+                                                              href="#header-n2983">表达产品意图的先导条件   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2984"><a class="md-toc-inner" href="#header-n2984">Auxon 简介   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2985"><a class="md-toc-inner"
+                                                              href="#header-n2985">需求和实现：成功和不足   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2986"><a class="md-toc-inner"
+                                                              href="#header-n2986">提升了解程度，推进采用率   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2987"><a class="md-toc-inner"
+                                                              href="#header-n2987">团队内部组成   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2988"><a class="md-toc-inner"
+                                                              href="#header-n2988">在SRE 团队中培养软件工程风气   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2989"><a class="md-toc-inner" href="#header-n2989">在SRE 团队中建立起软件工程氛围：招聘与开发时间   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2990"><a class="md-toc-inner"
+                                                              href="#header-n2990">做到这一点   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2991"><a class="md-toc-inner" href="#header-n2991">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2992"><a class="md-toc-inner"
+                                                              href="#header-n2992">第19 章　前端服务器的负载均衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2993"><a class="md-toc-inner"
+                                                              href="#header-n2993">有时候硬件并不能解决问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2994"><a class="md-toc-inner"
+                                                              href="#header-n2994">使用DNS 进行负载均衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2995"><a class="md-toc-inner" href="#header-n2995">负载均衡：虚拟IP   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2996"><a class="md-toc-inner" href="#header-n2996">第20 章　数据中心内部的负载均衡系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2997"><a class="md-toc-inner"
+                                                              href="#header-n2997">理想情况   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2998"><a class="md-toc-inner" href="#header-n2998">识别异常任务：流速控制和跛脚鸭任务   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n2999"><a class="md-toc-inner"
+                                                              href="#header-n2999">异常任务的简单应对办法：流速控制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3000"><a class="md-toc-inner" href="#header-n3000">一个可靠的识别异常任务的方法：跛脚鸭状态   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3001"><a class="md-toc-inner"
+                                                              href="#header-n3001">利用划分子集限制连接池大小   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3002"><a class="md-toc-inner"
+                                                              href="#header-n3002">选择合适的子集   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3003"><a class="md-toc-inner"
+                                                              href="#header-n3003">子集选择算法一：随机选择   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3004"><a class="md-toc-inner"
+                                                              href="#header-n3004">子集选择算法二：确定性算法   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3005"><a class="md-toc-inner"
+                                                              href="#header-n3005">负载均衡策略   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3006"><a class="md-toc-inner"
+                                                              href="#header-n3006">简单轮询算法   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3007"><a class="md-toc-inner"
+                                                              href="#header-n3007">最闲轮询策略   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3008"><a class="md-toc-inner"
+                                                              href="#header-n3008">加权轮询策略   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3009"><a class="md-toc-inner"
+                                                              href="#header-n3009">第21 章　应对过载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3010"><a class="md-toc-inner"
+                                                              href="#header-n3010">QPS 陷阱   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3011"><a class="md-toc-inner" href="#header-n3011">给每个用户设置限制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3012"><a class="md-toc-inner" href="#header-n3012">客户端侧的节流机制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3013"><a class="md-toc-inner"
+                                                              href="#header-n3013">重要性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3014"><a class="md-toc-inner"
+                                                              href="#header-n3014">资源利用率信号   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3015"><a class="md-toc-inner"
+                                                              href="#header-n3015">处理过载错误   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3016"><a class="md-toc-inner"
+                                                              href="#header-n3016">决定何时重试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3017"><a class="md-toc-inner"
+                                                              href="#header-n3017">连接造成的负载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3018"><a class="md-toc-inner" href="#header-n3018">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3019"><a class="md-toc-inner"
+                                                              href="#header-n3019">第22 章　处理连锁故障   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3020"><a class="md-toc-inner" href="#header-n3020">连锁故障产生的原因和如何从设计上避免   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3021"><a class="md-toc-inner"
+                                                              href="#header-n3021">服务器过载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3022"><a class="md-toc-inner"
+                                                              href="#header-n3022">资源耗尽   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3023"><a class="md-toc-inner"
+                                                              href="#header-n3023">服务不可用   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3024"><a class="md-toc-inner" href="#header-n3024">防止软件服务器过载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3025"><a class="md-toc-inner"
+                                                              href="#header-n3025">队列管理   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3026"><a class="md-toc-inner" href="#header-n3026">流量抛弃和优雅降级   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3027"><a class="md-toc-inner" href="#header-n3027">重试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3028"><a class="md-toc-inner" href="#header-n3028">请求延迟和截止时间   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3029"><a class="md-toc-inner"
+                                                              href="#header-n3029">慢启动和冷缓存   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3030"><a class="md-toc-inner" href="#header-n3030">保持调用栈永远向下   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3031"><a class="md-toc-inner" href="#header-n3031">连锁故障的触发条件   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3032"><a class="md-toc-inner"
+                                                              href="#header-n3032">进程崩溃   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3033"><a class="md-toc-inner"
+                                                              href="#header-n3033">进程更新   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3034"><a class="md-toc-inner"
+                                                              href="#header-n3034">新的发布   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3035"><a class="md-toc-inner"
+                                                              href="#header-n3035">自然增长   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3036"><a class="md-toc-inner"
+                                                              href="#header-n3036">计划中或计划外的不可用   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3037"><a class="md-toc-inner"
+                                                              href="#header-n3037">连锁故障的测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3038"><a class="md-toc-inner"
+                                                              href="#header-n3038">测试直到出现故障，还要继续测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3039"><a class="md-toc-inner" href="#header-n3039">测试最常用的客户端   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3040"><a class="md-toc-inner" href="#header-n3040">测试非关键性后端   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3041"><a class="md-toc-inner"
+                                                              href="#header-n3041">解决连锁故障的立即步骤   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3042"><a class="md-toc-inner"
+                                                              href="#header-n3042">增加资源   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3043"><a class="md-toc-inner"
+                                                              href="#header-n3043">停止健康检查导致的任务死亡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3044"><a class="md-toc-inner"
+                                                              href="#header-n3044">重启软件服务器   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3045"><a class="md-toc-inner"
+                                                              href="#header-n3045">丢弃流量   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3046"><a class="md-toc-inner"
+                                                              href="#header-n3046">进入降级模式   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3047"><a class="md-toc-inner"
+                                                              href="#header-n3047">消除批处理负载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3048"><a class="md-toc-inner"
+                                                              href="#header-n3048">消除有害的流量   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3049"><a class="md-toc-inner" href="#header-n3049">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3050"><a class="md-toc-inner" href="#header-n3050">第23 章　管理关键状态：利用分布式共识来提高可靠性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3051"><a class="md-toc-inner" href="#header-n3051">使用共识系统的动力：分布式系统协调失败   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3052"><a class="md-toc-inner" href="#header-n3052">案例1 ：脑裂问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3053"><a class="md-toc-inner"
+                                                              href="#header-n3053">案例2 ：需要人工干预的灾备切换   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3054"><a class="md-toc-inner"
+                                                              href="#header-n3054">案例3 ：有问题的小组成员算法   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3055"><a class="md-toc-inner"
+                                                              href="#header-n3055">分布式共识是如何工作的   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3056"><a class="md-toc-inner"
+                                                              href="#header-n3056">Paxos 概要：协议示例   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3057"><a class="md-toc-inner"
+                                                              href="#header-n3057">分布式共识的系统架构模式   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3058"><a class="md-toc-inner" href="#header-n3058">可靠的复制状态机   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3059"><a class="md-toc-inner"
+                                                              href="#header-n3059">可靠的复制数据存储和配置存储   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3060"><a class="md-toc-inner" href="#header-n3060">使用领头人选举机制实现高可用的处理系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3061"><a class="md-toc-inner" href="#header-n3061">分布式协调和锁服务   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3062"><a class="md-toc-inner"
+                                                              href="#header-n3062">可靠的分布式队列和消息传递   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3063"><a class="md-toc-inner"
+                                                              href="#header-n3063">分布式共识系统的性能问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3064"><a class="md-toc-inner" href="#header-n3064">复合式Paxos ：消息流过程详解   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3065"><a class="md-toc-inner" href="#header-n3065">应对大量的读操作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3066"><a class="md-toc-inner"
+                                                              href="#header-n3066">法定租约   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3067"><a class="md-toc-inner"
+                                                              href="#header-n3067">分布式共识系统的性能与网络延迟   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3068"><a class="md-toc-inner"
+                                                              href="#header-n3068">快速Paxos 协议：性能优化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3069"><a class="md-toc-inner" href="#header-n3069">稳定的领头人机制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3070"><a class="md-toc-inner"
+                                                              href="#header-n3070">批处理   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3071"><a class="md-toc-inner"
+                                                              href="#header-n3071">磁盘访问   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3072"><a class="md-toc-inner"
+                                                              href="#header-n3072">分布式共识系统的部署   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3073"><a class="md-toc-inner"
+                                                              href="#header-n3073">副本的数量   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3074"><a class="md-toc-inner"
+                                                              href="#header-n3074">副本的位置   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3075"><a class="md-toc-inner" href="#header-n3075">容量规划和负载均衡   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3076"><a class="md-toc-inner"
+                                                              href="#header-n3076">对分布式共识系统的监控   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3077"><a class="md-toc-inner" href="#header-n3077">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3078"><a class="md-toc-inner"
+                                                              href="#header-n3078">第24 章　分布式周期性任务系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3079"><a class="md-toc-inner"
+                                                              href="#header-n3079">Cron   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3080"><a class="md-toc-inner" href="#header-n3080">介绍   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3081"><a class="md-toc-inner"
+                                                              href="#header-n3081">可靠性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3082"><a class="md-toc-inner"
+                                                              href="#header-n3082">Cron 任务和幂等性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3083"><a class="md-toc-inner"
+                                                              href="#header-n3083">大规模Cron 系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3084"><a class="md-toc-inner" href="#header-n3084">对基础设施的扩展   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3085"><a class="md-toc-inner"
+                                                              href="#header-n3085">对需求的扩展   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3086"><a class="md-toc-inner" href="#header-n3086">Google Cron 系统的构建过程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3087"><a class="md-toc-inner"
+                                                              href="#header-n3087">跟踪Cron 任务的状态   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3088"><a class="md-toc-inner"
+                                                              href="#header-n3088">Paxos 协议的使用   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3089"><a class="md-toc-inner"
+                                                              href="#header-n3089">领头人角色和追随者角色   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3090"><a class="md-toc-inner"
+                                                              href="#header-n3090">保存状态   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3091"><a class="md-toc-inner"
+                                                              href="#header-n3091">运维大型Cron 系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3092"><a class="md-toc-inner" href="#header-n3092">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3093"><a class="md-toc-inner"
+                                                              href="#header-n3093">第25 章　数据处理流水线   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3094"><a class="md-toc-inner"
+                                                              href="#header-n3094">流水线设计模式的起源   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3095"><a class="md-toc-inner"
+                                                              href="#header-n3095">简单流水线设计模式与大数据   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3096"><a class="md-toc-inner"
+                                                              href="#header-n3096">周期性流水线模式的挑战   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3097"><a class="md-toc-inner"
+                                                              href="#header-n3097">工作分发不均造成的问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3098"><a class="md-toc-inner" href="#header-n3098">分布式环境中周期性数据流水线的缺点   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3099"><a class="md-toc-inner"
+                                                              href="#header-n3099">监控周期性流水线的问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3100"><a class="md-toc-inner"
+                                                              href="#header-n3100">惊群效应   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3101"><a class="md-toc-inner"
+                                                              href="#header-n3101">摩尔负载模式   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3102"><a class="md-toc-inner" href="#header-n3102">Google Workflow 简介   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3103"><a class="md-toc-inner" href="#header-n3103">Workflow 是模型—视图—控制器（MVC）模式   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3104"><a class="md-toc-inner"
+                                                              href="#header-n3104">Workflow 中的执行阶段   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3105"><a class="md-toc-inner"
+                                                              href="#header-n3105">Workflow 正确性保障   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3106"><a class="md-toc-inner" href="#header-n3106">保障业务的持续性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3107"><a class="md-toc-inner" href="#header-n3107">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3108"><a class="md-toc-inner"
+                                                              href="#header-n3108">第26 章　数据完整性：读写一致   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3109"><a class="md-toc-inner" href="#header-n3109">数据完整性的强需求   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3110"><a class="md-toc-inner"
+                                                              href="#header-n3110">提供超高的数据完整性的策略   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3111"><a class="md-toc-inner"
+                                                              href="#header-n3111">备份与存档   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3112"><a class="md-toc-inner" href="#header-n3112">云计算环境下的需求   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3113"><a class="md-toc-inner" href="#header-n3113">保障数据完整性和可用性：Google SRE 的目标   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3114"><a class="md-toc-inner" href="#header-n3114">数据完整性是手段，数据可用性是目标   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3115"><a class="md-toc-inner"
+                                                              href="#header-n3115">交付一个恢复系统，而非备份系统   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3116"><a class="md-toc-inner"
+                                                              href="#header-n3116">造成数据丢失的事故类型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3117"><a class="md-toc-inner" href="#header-n3117">维护数据完整性的深度和广度的困难之处   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3118"><a class="md-toc-inner" href="#header-n3118">Google SRE 保障数据完整性的手段   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3119"><a class="md-toc-inner"
+                                                              href="#header-n3119">24 种数据完整性的事故组合   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3120"><a class="md-toc-inner"
+                                                              href="#header-n3120">第一层：软删除   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3121"><a class="md-toc-inner"
+                                                              href="#header-n3121">第二层：备份和相关的恢复方法   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3122"><a class="md-toc-inner" href="#header-n3122">额外一层：复制机制   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3123"><a class="md-toc-inner" href="#header-n3123">1T vs. 1E ：存储更多数据没那么简单   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3124"><a class="md-toc-inner" href="#header-n3124">第三层：早期预警   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3125"><a class="md-toc-inner"
+                                                              href="#header-n3125">确保数据恢复策略可以正常工作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3126"><a class="md-toc-inner"
+                                                              href="#header-n3126">案例分析   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3127"><a class="md-toc-inner" href="#header-n3127">Gmail—2011 年2 月：从GTape 上恢复数据（磁带）   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3128"><a class="md-toc-inner" href="#header-n3128">Google Music—2012 年3 月：一次意外删除事故的检测过程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3129"><a class="md-toc-inner" href="#header-n3129">SRE 的基本理念在数据完整性上的应用   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3130"><a class="md-toc-inner" href="#header-n3130">保持初学者的心态   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3131"><a class="md-toc-inner"
+                                                              href="#header-n3131">信任但要验证   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3132"><a class="md-toc-inner"
+                                                              href="#header-n3132">xxvi ｜</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3133"><a class="md-toc-inner"
+                                                              href="#header-n3133">不要一厢情愿   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3134"><a class="md-toc-inner"
+                                                              href="#header-n3134">纵深防御   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3135"><a class="md-toc-inner" href="#header-n3135">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3136"><a class="md-toc-inner" href="#header-n3136">第27 章　可靠地进行产品的大规模发布   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3137"><a class="md-toc-inner"
+                                                              href="#header-n3137">发布协调工程师   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3138"><a class="md-toc-inner"
+                                                              href="#header-n3138">发布协调工程师的角色   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3139"><a class="md-toc-inner"
+                                                              href="#header-n3139">建立发布流程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3140"><a class="md-toc-inner"
+                                                              href="#header-n3140">发布检查列表   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3141"><a class="md-toc-inner"
+                                                              href="#header-n3141">推动融合和简化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3142"><a class="md-toc-inner"
+                                                              href="#header-n3142">发布未知的产品   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3143"><a class="md-toc-inner"
+                                                              href="#header-n3143">起草一个发布检查列表   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3144"><a class="md-toc-inner"
+                                                              href="#header-n3144">架构与依赖   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3145"><a class="md-toc-inner" href="#header-n3145">集成   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3146"><a class="md-toc-inner"
+                                                              href="#header-n3146">容量规划   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3147"><a class="md-toc-inner"
+                                                              href="#header-n3147">故障模式  </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3148"><a class="md-toc-inner"
+                                                              href="#header-n3148">客户端行为   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3149"><a class="md-toc-inner"
+                                                              href="#header-n3149">流程与自动化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3150"><a class="md-toc-inner"
+                                                              href="#header-n3150">开发流程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3151"><a class="md-toc-inner"
+                                                              href="#header-n3151">外部依赖   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3152"><a class="md-toc-inner"
+                                                              href="#header-n3152">发布计划   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3153"><a class="md-toc-inner"
+                                                              href="#header-n3153">可靠发布所需要的方法论   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3154"><a class="md-toc-inner" href="#header-n3154">灰度和阶段性发布   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3155"><a class="md-toc-inner"
+                                                              href="#header-n3155">功能开关框架   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3156"><a class="md-toc-inner" href="#header-n3156">应对客户端滥用行为   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3157"><a class="md-toc-inner" href="#header-n3157">过载行为和压力测试   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3158"><a class="md-toc-inner"
+                                                              href="#header-n3158">LCE 的发展   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3159"><a class="md-toc-inner"
+                                                              href="#header-n3159">LCE 检查列表的变迁   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3160"><a class="md-toc-inner"
+                                                              href="#header-n3160">LCE 没有解决的问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3161"><a class="md-toc-inner" href="#header-n3161">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3162"><a class="md-toc-inner"
+                                                              href="#header-n3162">第Ⅳ部分</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3163"><a class="md-toc-inner" href="#header-n3163">第28 章　迅速培养SRE 加入on-call   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3164"><a class="md-toc-inner" href="#header-n3164">新的SRE 已经招聘到了，接下来怎么办   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3165"><a class="md-toc-inner"
+                                                              href="#header-n3165">培训初期：重体系，而非混乱   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3166"><a class="md-toc-inner"
+                                                              href="#header-n3166">系统性、累积型的学习方式   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3167"><a class="md-toc-inner"
+                                                              href="#header-n3167">目标性强的项目工作，而非琐事   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3168"><a class="md-toc-inner"
+                                                              href="#header-n3168">培养反向工程能力和随机应变能力   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3169"><a class="md-toc-inner"
+                                                              href="#header-n3169">反向工程：弄明白系统如何工作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3170"><a class="md-toc-inner" href="#header-n3170">统计学和比较性思维：在压力下坚持科学方法论   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3171"><a class="md-toc-inner" href="#header-n3171">随机应变的能力：当意料之外的事情发生时怎么办   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3172"><a class="md-toc-inner" href="#header-n3172">将知识串联起来：反向工程某个生产环境服务   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3173"><a class="md-toc-inner" href="#header-n3173">有抱负的on-call 工程师的5 个特点   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3174"><a class="md-toc-inner" href="#header-n3174">对事故的渴望：事后总结的阅读和书写   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3175"><a class="md-toc-inner" href="#header-n3175">故障处理分角色演习   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3176"><a class="md-toc-inner"
+                                                              href="#header-n3176">破坏真的东西，并且修复它们   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3177"><a class="md-toc-inner"
+                                                              href="#header-n3177">维护文档是学徒任务的一部分   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3178"><a class="md-toc-inner"
+                                                              href="#header-n3178">尽早、尽快见习on-call   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3179"><a class="md-toc-inner" href="#header-n3179">on-call 之后：通过培训的仪式感，以及日后的持续教育   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3180"><a class="md-toc-inner" href="#header-n3180">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3181"><a class="md-toc-inner"
+                                                              href="#header-n3181">第29 章　处理中断性任务   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3182"><a class="md-toc-inner"
+                                                              href="#header-n3182">管理运维负载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3183"><a class="md-toc-inner"
+                                                              href="#header-n3183">如何决策对中断性任务的处理策略   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3184"><a class="md-toc-inner"
+                                                              href="#header-n3184">不完美的机器   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3185"><a class="md-toc-inner"
+                                                              href="#header-n3185">流状态   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3186"><a class="md-toc-inner"
+                                                              href="#header-n3186">将一件事情做好   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3187"><a class="md-toc-inner"
+                                                              href="#header-n3187">实际一点的建议   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3188"><a class="md-toc-inner"
+                                                              href="#header-n3188">减少中断   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3189"><a class="md-toc-inner" href="#header-n3189">第30 章　通过嵌入SRE 的方式帮助团队从运维过载中恢复   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3190"><a class="md-toc-inner"
+                                                              href="#header-n3190">第一阶段：了解服务，了解上下文   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3191"><a class="md-toc-inner" href="#header-n3191">确定最大的压力来源   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3192"><a class="md-toc-inner"
+                                                              href="#header-n3192">找到导火索   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3193"><a class="md-toc-inner"
+                                                              href="#header-n3193">第二阶段：分享背景知识   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3194"><a class="md-toc-inner"
+                                                              href="#header-n3194">书写一个好的事后总结作为示范   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3195"><a class="md-toc-inner"
+                                                              href="#header-n3195">将紧急事件按类型排序   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3196"><a class="md-toc-inner" href="#header-n3196">第三阶段：主导改变   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3197"><a class="md-toc-inner"
+                                                              href="#header-n3197">从基础开始   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3198"><a class="md-toc-inner" href="#header-n3198">获取团队成员的帮助   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3199"><a class="md-toc-inner"
+                                                              href="#header-n3199">解释你的逻辑推理过程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3200"><a class="md-toc-inner"
+                                                              href="#header-n3200">提出引导性问题   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3201"><a class="md-toc-inner" href="#header-n3201">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3202"><a class="md-toc-inner" href="#header-n3202">第 31 章　SRE 与其他团队的沟通与协作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3203"><a class="md-toc-inner"
+                                                              href="#header-n3203">沟通：生产会议   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3204"><a class="md-toc-inner" href="#header-n3204">议程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3205"><a class="md-toc-inner"
+                                                              href="#header-n3205">出席人员   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3206"><a class="md-toc-inner" href="#header-n3206">SRE 的内部协作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3207"><a class="md-toc-inner"
+                                                              href="#header-n3207">团队构成   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3208"><a class="md-toc-inner"
+                                                              href="#header-n3208">高效工作的技术   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3209"><a class="md-toc-inner" href="#header-n3209">SRE 内部的协作案例分析：Viceroy   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3210"><a class="md-toc-inner"
+                                                              href="#header-n3210">Viceroy 的诞生   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3211"><a class="md-toc-inner"
+                                                              href="#header-n3211">所面临的挑战   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3212"><a class="md-toc-inner" href="#header-n3212">建议   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3213"><a class="md-toc-inner"
+                                                              href="#header-n3213">SRE 与其他部门之间的协作   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3214"><a class="md-toc-inner"
+                                                              href="#header-n3214">案例分析：将DFP 迁移到F1   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3215"><a class="md-toc-inner" href="#header-n3215">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3216"><a class="md-toc-inner" href="#header-n3216">第32 章　SRE 参与模式的演进历程   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3217"><a class="md-toc-inner" href="#header-n3217">SRE 参与模式：是什么、怎么样以及为什么   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3218"><a class="md-toc-inner"
+                                                              href="#header-n3218">PRR 模型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3219"><a class="md-toc-inner" href="#header-n3219">SRE 参与模型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3220"><a class="md-toc-inner"
+                                                              href="#header-n3220">替代性支持   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3221"><a class="md-toc-inner"
+                                                              href="#header-n3221">PRR ：简单PRR 模型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3222"><a class="md-toc-inner" href="#header-n3222">参与   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3223"><a class="md-toc-inner" href="#header-n3223">分析   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3224"><a class="md-toc-inner"
+                                                              href="#header-n3224">改进和重构   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3225"><a class="md-toc-inner" href="#header-n3225">培训   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3226"><a class="md-toc-inner"
+                                                              href="#header-n3226">“接手”服务   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3227"><a class="md-toc-inner"
+                                                              href="#header-n3227">持续改进   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3228"><a class="md-toc-inner" href="#header-n3228">简单PRR 模型的演进：早期参与模型   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3229"><a class="md-toc-inner"
+                                                              href="#header-n3229">早期参与模型的适用对象   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3230"><a class="md-toc-inner" href="#header-n3230">早期参与模型的优势   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3231"><a class="md-toc-inner" href="#header-n3231">不断发展的服务：框架和SRE 平台   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3232"><a class="md-toc-inner"
+                                                              href="#header-n3232">经验教训   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3233"><a class="md-toc-inner"
+                                                              href="#header-n3233">影响SRE 的外部因素   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3234"><a class="md-toc-inner"
+                                                              href="#header-n3234">结构化的解决方案：框架   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3235"><a class="md-toc-inner" href="#header-n3235">新服务和管理优势   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3236"><a class="md-toc-inner" href="#header-n3236">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3237"><a class="md-toc-inner" href="#header-n3237">第Ⅴ部分　</a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3238"><a class="md-toc-inner"
+                                                              href="#header-n3238">第33 章　其他行业的实践经验   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3239"><a class="md-toc-inner"
+                                                              href="#header-n3239">有其他行业背景的资深SRE   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3240"><a class="md-toc-inner"
+                                                              href="#header-n3240">灾难预案与演习   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3241"><a class="md-toc-inner" href="#header-n3241">从组织架构层面坚持不懈地对安全进行关注   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3242"><a class="md-toc-inner"
+                                                              href="#header-n3242">关注任何细节   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3243"><a class="md-toc-inner"
+                                                              href="#header-n3243">冗余容量   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3244"><a class="md-toc-inner"
+                                                              href="#header-n3244">模拟以及进行线上灾难演习   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3245"><a class="md-toc-inner"
+                                                              href="#header-n3245">培训与考核   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3246"><a class="md-toc-inner"
+                                                              href="#header-n3246">对详细的需求收集和系统设计的关注   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3247"><a class="md-toc-inner"
+                                                              href="#header-n3247">纵深防御   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3248"><a class="md-toc-inner"
+                                                              href="#header-n3248">事后总结的文化   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3249"><a class="md-toc-inner"
+                                                              href="#header-n3249">将重复性工作自动化，消除运维负载   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3250"><a class="md-toc-inner" href="#header-n3250">结构化和理性的决策   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3251"><a class="md-toc-inner" href="#header-n3251">小结   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3252"><a class="md-toc-inner" href="#header-n3252">第34 章　结语   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3253"><a class="md-toc-inner" href="#header-n3253">附录A　系统可用性   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3254"><a class="md-toc-inner" href="#header-n3254">附录B　生产环境运维过程中的最佳实践   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3255"><a class="md-toc-inner"
+                                                              href="#header-n3255">附录C　事故状态文档示范   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3256"><a class="md-toc-inner"
+                                                              href="#header-n3256">附录D　事后总结示范   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3257"><a class="md-toc-inner"
+                                                              href="#header-n3257">附录E　发布协调检查列表   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3258"><a class="md-toc-inner"
+                                                              href="#header-n3258">附录F　生产环境会议记录示范   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3259"><a class="md-toc-inner"
+                                                              href="#header-n3259">参考文献   </a></span><span
+            class="md-toc-item md-toc-h3" data-ref="n3260"><a class="md-toc-inner" href="#header-n3260">索引   </a></span>
+    </p>
+</div>
+
+<div class="right-div">
+
+    <h1><a name='header-n2755' class='md-header-anchor '></a>第1 章　介绍</h1>
+    <h3><a name='header-n2756' class='md-header-anchor '></a>系统管理员模式 </h3>
+    <p>test</p>
+    <h3><a name='header-n2757' class='md-header-anchor '></a>Google 的解决之道：SRE</h3>
+    <h3><a name='header-n2758' class='md-header-anchor '></a>SRE 方法论</h3><h5><a name='header-n2759'
+                                                                                class='md-header-anchor '></a>确保长期关注研发工作
+</h5><h5><a name='header-n2760' class='md-header-anchor '></a>在保障服务SLO 的前提下最大化迭代速度</h5><h5><a name='header-n2761'
+                                                                                              class='md-header-anchor '></a>监控系统
+</h5><h5><a name='header-n2762' class='md-header-anchor '></a>应急事件处理 </h5><h5><a name='header-n2763'
+                                                                                 class='md-header-anchor '></a>变更管理</h5>
+    <h5><a name='header-n2764' class='md-header-anchor '></a>需求预测和容量规划</h5><h5><a name='header-n2765'
+                                                                                  class='md-header-anchor '></a>资源部署
+</h5><h5><a name='header-n2766' class='md-header-anchor '></a>效率与性能</h5>
+    <h3><a name='header-n2767' class='md-header-anchor '></a>小结<span>	</span></h3>
+    <p>&nbsp;</p>
+    <h1><a name='header-n2769' class='md-header-anchor '></a>第2 章　Google 生产环境：SRE 视角</h1>
+    <h3><a name='header-n2770' class='md-header-anchor '></a>硬件 </h3>
+    <h3><a name='header-n2771' class='md-header-anchor '></a>管理物理服务器的系统管理软件 </h3><h5><a name='header-n2772'
+                                                                                        class='md-header-anchor '></a>管理物理服务器
+</h5><h5><a name='header-n2773' class='md-header-anchor '></a>存储 </h5><h5><a name='header-n2774'
+                                                                             class='md-header-anchor '></a>网络 </h5>
+    <h3><a name='header-n2775' class='md-header-anchor '></a>其他系统软件 </h3><h5><a name='header-n2776'
+                                                                                class='md-header-anchor '></a>分布式锁服务
+</h5><h5><a name='header-n2777' class='md-header-anchor '></a>监控与警报系统 </h5>
+    <h3><a name='header-n2778' class='md-header-anchor '></a>软件基础设施 </h3>
+    <h3><a name='header-n2779' class='md-header-anchor '></a>研发环境 </h3>
+    <h3><a name='header-n2780' class='md-header-anchor '></a>莎士比亚搜索：一个示范服务 </h3><h5><a name='header-n2781'
+                                                                                       class='md-header-anchor '></a>用户请求的处理过程
+</h5><h5><a name='header-n2782' class='md-header-anchor '></a>任务和数据的组织方式 </h5>
+    <p>&nbsp;</p>
+    <h1><a name='header-n2784' class='md-header-anchor '></a>第3 章　拥抱风险 </h1>
+    <h3><a name='header-n2785' class='md-header-anchor '></a>管理风险 </h3>
+    <h3><a name='header-n2786' class='md-header-anchor '></a>度量服务的风险 </h3>
+    <h3><a name='header-n2787' class='md-header-anchor '></a>服务的风险容忍度 </h3><h5><a name='header-n2788'
+                                                                                  class='md-header-anchor '></a>辨别消费者服务的风险容忍度
+</h5><h5><a name='header-n2789' class='md-header-anchor '></a>基础设施服务的风险容忍度 </h5>
+    <h3><a name='header-n2790' class='md-header-anchor '></a>使用错误预算的目的 </h3><h5><a name='header-n2791'
+                                                                                   class='md-header-anchor '></a>错误预算的构建过程
+</h5><h5><a name='header-n2792' class='md-header-anchor '></a>好处 </h5>
+    <p>&nbsp;</p>
+    <h1><a name='header-n2794' class='md-header-anchor '></a>第4 章　服务质量目标 </h1>
+    <h3><a name='header-n2795' class='md-header-anchor '></a>服务质量术语 </h3><h5><a name='header-n2796'
+                                                                                class='md-header-anchor '></a>指标 </h5>
+    <h5><a name='header-n2797' class='md-header-anchor '></a>目标 </h5><h5><a name='header-n2798'
+                                                                            class='md-header-anchor '></a>协议 </h5>
+    <h3><a name='header-n2799' class='md-header-anchor '></a>指标在实践中的应用 </h3><h5><a name='header-n2800'
+                                                                                   class='md-header-anchor '></a>运维人员和最终用户各关心什么
+</h5><h5><a name='header-n2801' class='md-header-anchor '></a>指标的收集 </h5><h5><a name='header-n2802'
+                                                                                class='md-header-anchor '></a>汇总 </h5>
+    <h5><a name='header-n2803' class='md-header-anchor '></a>指标的标准化 </h5>
+    <h3><a name='header-n2804' class='md-header-anchor '></a>目标在实践中的应用 </h3><h5><a name='header-n2805'
+                                                                                   class='md-header-anchor '></a>目标的定义
+</h5><h5><a name='header-n2806' class='md-header-anchor '></a>目标的选择 </h5><h5><a name='header-n2807'
+                                                                                class='md-header-anchor '></a>控制手段 </h5>
+    <h5><a name='header-n2808' class='md-header-anchor '></a>SLO 可以建立用户预期 </h5>
+    <h3><a name='header-n2809' class='md-header-anchor '></a>协议在实践中的应用 </h3>
+    <p>&nbsp;</p>
+    <h1><a name='header-n3262' class='md-header-anchor '></a>第5 章　减少琐事 </h1>
+    <h3><a name='header-n2811' class='md-header-anchor '></a>琐事的定义 </h3>
+    <h3><a name='header-n2812' class='md-header-anchor '></a>为什么琐事越少越好 </h3>
+    <h3><a name='header-n2813' class='md-header-anchor '></a>什么算作工程工作 </h3>
+    <h3><a name='header-n2814' class='md-header-anchor '></a>琐事繁多是不是一定不好 </h3>
+    <h3><a name='header-n2815' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2816' class='md-header-anchor '></a>第6 章　分布式系统的监控 </h3>
+    <h3><a name='header-n2817' class='md-header-anchor '></a>术语定义 </h3>
+    <h3><a name='header-n2818' class='md-header-anchor '></a>为什么要监控 </h3>
+    <h3><a name='header-n2819' class='md-header-anchor '></a>对监控系统设置合理预期 </h3>
+    <h3><a name='header-n2820' class='md-header-anchor '></a>现象与原因 </h3>
+    <h3><a name='header-n2821' class='md-header-anchor '></a>黑盒监控与白盒监控 </h3>
+    <h3><a name='header-n2822' class='md-header-anchor '></a>4 个黄金指标 </h3>
+    <h3><a name='header-n2823' class='md-header-anchor '></a>关于长尾问题 </h3>
+    <h3><a name='header-n2824' class='md-header-anchor '></a>度量指标时采用合适的精度 </h3>
+    <h3><a name='header-n2825' class='md-header-anchor '></a>简化，直到不能再简化 </h3>
+    <h3><a name='header-n2826' class='md-header-anchor '></a>将上述理念整合起来 </h3>
+    <h3><a name='header-n2827' class='md-header-anchor '></a>监控系统的长期维护 </h3>
+    <h3><a name='header-n2828' class='md-header-anchor '></a>Bigtable SRE ：警报过多的案例 </h3>
+    <h3><a name='header-n2829' class='md-header-anchor '></a>Gmail ：可预知的、可脚本化的人工干预 </h3>
+    <h3><a name='header-n2830' class='md-header-anchor '></a>长跑 </h3>
+    <h3><a name='header-n2831' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2832' class='md-header-anchor '></a>第7 章　Google 的自动化系统的演进 </h3>
+    <h3><a name='header-n2833' class='md-header-anchor '></a>自动化的价值 </h3>
+    <h3><a name='header-n2834' class='md-header-anchor '></a>一致性 </h3>
+    <h3><a name='header-n2835' class='md-header-anchor '></a>平台性 </h3>
+    <h3><a name='header-n2836' class='md-header-anchor '></a>修复速度更快 </h3>
+    <h3><a name='header-n2837' class='md-header-anchor '></a>行动速度更快 </h3>
+    <h3><a name='header-n2838' class='md-header-anchor '></a>节省时间 </h3>
+    <h3><a name='header-n2839' class='md-header-anchor '></a>自动化对Google SRE 的价值 </h3>
+    <h3><a name='header-n2840' class='md-header-anchor '></a>自动化的应用案例 </h3>
+    <h3><a name='header-n2841' class='md-header-anchor '></a>Google SRE 的自动化使用案例 </h3>
+    <h3><a name='header-n2842' class='md-header-anchor '></a>自动化分类的层次结构 </h3>
+    <h3><a name='header-n2843' class='md-header-anchor '></a>让自己脱离工作：自动化所有的东西 </h3>
+    <h3><a name='header-n2844' class='md-header-anchor '></a>舒缓疼痛：将自动化应用到集群上线中 </h3>
+    <h3><a name='header-n2845' class='md-header-anchor '></a>使用Prodtest 检测不一致情况 </h3>
+    <h3><a name='header-n2846' class='md-header-anchor '></a>幂等地解决不一致情况 </h3>
+    <h3><a name='header-n2847' class='md-header-anchor '></a>专业化倾向 </h3>
+    <h3><a name='header-n2848' class='md-header-anchor '></a>以服务为导向的集群上线流程 </h3>
+    <h3><a name='header-n2849' class='md-header-anchor '></a>Borg ：仓库规模计算机的诞生 </h3>
+    <h3><a name='header-n2850' class='md-header-anchor '></a>可靠性是最基本的功能 </h3>
+    <h3><a name='header-n2851' class='md-header-anchor '></a>建议 </h3>
+    <h3><a name='header-n2852' class='md-header-anchor '></a>第8 章　发布工程 </h3>
+    <h3><a name='header-n2853' class='md-header-anchor '></a>发布工程师的角色 </h3>
+    <h3><a name='header-n2854' class='md-header-anchor '></a>发布工程哲学 </h3>
+    <h3><a name='header-n2855' class='md-header-anchor '></a>自服务模型 </h3>
+    <h3><a name='header-n2856' class='md-header-anchor '></a>追求速度 </h3>
+    <h3><a name='header-n2857' class='md-header-anchor '></a>密闭性 </h3>
+    <h3><a name='header-n2858' class='md-header-anchor '></a>强调策略和流程 </h3>
+    <h3><a name='header-n2859' class='md-header-anchor '></a>持续构建与部署 </h3>
+    <h3><a name='header-n2860' class='md-header-anchor '></a>构建 </h3>
+    <h3><a name='header-n2861' class='md-header-anchor '></a>分支 </h3>
+    <h3><a name='header-n2862' class='md-header-anchor '></a>测试 </h3>
+    <h3><a name='header-n2863' class='md-header-anchor '></a>打包 </h3>
+    <h3><a name='header-n2864' class='md-header-anchor '></a>Rapid 系统 </h3>
+    <h3><a name='header-n2865' class='md-header-anchor '></a>部署 </h3>
+    <h3><a name='header-n2866' class='md-header-anchor '></a>配置管理 </h3>
+    <h3><a name='header-n2867' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2868' class='md-header-anchor '></a>不仅仅只对Google 有用 </h3>
+    <h3><a name='header-n2869' class='md-header-anchor '></a>一开始就进行发布工程 </h3>
+    <h3><a name='header-n2870' class='md-header-anchor '></a>第9 章　简单化 </h3>
+    <h3><a name='header-n2871' class='md-header-anchor '></a>系统的稳定性与灵活性 </h3>
+    <h3><a name='header-n2872' class='md-header-anchor '></a>乏味是一种美德 </h3>
+    <h3><a name='header-n2873' class='md-header-anchor '></a>我绝对不放弃我的代码 </h3>
+    <h3><a name='header-n2874' class='md-header-anchor '></a>“负代码行”作为一个指标 </h3>
+    <h3><a name='header-n2875' class='md-header-anchor '></a>最小 API </h3>
+    <h3><a name='header-n2876' class='md-header-anchor '></a>模块化 </h3>
+    <h3><a name='header-n2877' class='md-header-anchor '></a>发布的简单化 </h3>
+    <h3><a name='header-n2878' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2879' class='md-header-anchor '></a>第Ⅲ部分　具</h3>
+    <h3><a name='header-n2880' class='md-header-anchor '></a>第10 章　基于时间序列数据进行有效报警 </h3>
+    <h3><a name='header-n2881' class='md-header-anchor '></a>Borgmon 的起源 </h3>
+    <h3><a name='header-n2882' class='md-header-anchor '></a>应用软件的监控埋点 </h3>
+    <h3><a name='header-n2883' class='md-header-anchor '></a>监控指标的收集 </h3>
+    <h3><a name='header-n2884' class='md-header-anchor '></a>时间序列数据的存储 </h3>
+    <h3><a name='header-n2885' class='md-header-anchor '></a>标签与向量 </h3>
+    <h3><a name='header-n2886' class='md-header-anchor '></a>Borg 规则计算 </h3>
+    <h3><a name='header-n2887' class='md-header-anchor '></a>报警 </h3>
+    <h3><a name='header-n2888' class='md-header-anchor '></a>监控系统的分片机制 </h3>
+    <h3><a name='header-n2889' class='md-header-anchor '></a>黑盒监控 </h3>
+    <h3><a name='header-n2890' class='md-header-anchor '></a>配置文件的维护 </h3>
+    <h3><a name='header-n2891' class='md-header-anchor '></a>十年之后 </h3>
+    <h3><a name='header-n2892' class='md-header-anchor '></a>第11 章　on-call 轮值 </h3>
+    <h3><a name='header-n2893' class='md-header-anchor '></a>介绍 </h3>
+    <h3><a name='header-n2894' class='md-header-anchor '></a>on-call 工程师的一天 </h3>
+    <h3><a name='header-n2895' class='md-header-anchor '></a>on-call 工作平衡 </h3>
+    <h3><a name='header-n2896' class='md-header-anchor '></a>数量上保持平衡 </h3>
+    <h3><a name='header-n2897' class='md-header-anchor '></a>质量上保持平衡 </h3>
+    <h3><a name='header-n2898' class='md-header-anchor '></a>补贴措施 </h3>
+    <h3><a name='header-n2899' class='md-header-anchor '></a>安全感 </h3>
+    <h3><a name='header-n2900' class='md-header-anchor '></a>避免运维压力过大 </h3>
+    <h3><a name='header-n2901' class='md-header-anchor '></a>运维压力过大 </h3>
+    <h3><a name='header-n2902' class='md-header-anchor '></a>奸诈的敌人—运维压力不够 </h3>
+    <h3><a name='header-n2903' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2904' class='md-header-anchor '></a>第12 章　有效的故障排查手段 </h3>
+    <h3><a name='header-n2905' class='md-header-anchor '></a>理论 </h3>
+    <h3><a name='header-n2906' class='md-header-anchor '></a>实践 </h3>
+    <h3><a name='header-n2907' class='md-header-anchor '></a>故障报告 </h3>
+    <h3><a name='header-n2908' class='md-header-anchor '></a>定位 </h3>
+    <h3><a name='header-n2909' class='md-header-anchor '></a>检查 </h3>
+    <h3><a name='header-n2910' class='md-header-anchor '></a>诊断 </h3>
+    <h3><a name='header-n2911' class='md-header-anchor '></a>测试和修复 </h3>
+    <h3><a name='header-n2912' class='md-header-anchor '></a>神奇的负面结果 </h3>
+    <h3><a name='header-n2913' class='md-header-anchor '></a>治愈 </h3>
+    <h3><a name='header-n2914' class='md-header-anchor '></a>案例分析 </h3>
+    <h3><a name='header-n2915' class='md-header-anchor '></a>使故障排查更简单 </h3>
+    <h3><a name='header-n2916' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2917' class='md-header-anchor '></a>第13 章　紧急事件响应 </h3>
+    <h3><a name='header-n2918' class='md-header-anchor '></a>当系统出现问题时怎么办 </h3>
+    <h3><a name='header-n2919' class='md-header-anchor '></a>测试导致的紧急事故 </h3>
+    <h3><a name='header-n2920' class='md-header-anchor '></a>细节 </h3>
+    <h3><a name='header-n2921' class='md-header-anchor '></a>响应 </h3>
+    <h3><a name='header-n2922' class='md-header-anchor '></a>事后总结 </h3>
+    <h3><a name='header-n2923' class='md-header-anchor '></a>变更部署带来的紧急事故 </h3>
+    <h3><a name='header-n2924' class='md-header-anchor '></a>细节 </h3>
+    <h3><a name='header-n2925' class='md-header-anchor '></a>事故响应 </h3>
+    <h3><a name='header-n2926' class='md-header-anchor '></a>事后总结 </h3>
+    <h3><a name='header-n2927' class='md-header-anchor '></a>流程导致的严重事故 </h3>
+    <h3><a name='header-n2928' class='md-header-anchor '></a>细节 </h3>
+    <h3><a name='header-n2929' class='md-header-anchor '></a>灾难响应 </h3>
+    <h3><a name='header-n2930' class='md-header-anchor '></a>事后总结 </h3>
+    <h3><a name='header-n2931' class='md-header-anchor '></a>所有的问题都有解决方案 </h3>
+    <h3><a name='header-n2932' class='md-header-anchor '></a>向过去学习，而不是重复它 </h3>
+    <h3><a name='header-n2933' class='md-header-anchor '></a>为事故保留记录 </h3>
+    <h3><a name='header-n2934' class='md-header-anchor '></a>提出那些大的，甚至不可能的问题：假如…… </h3>
+    <h3><a name='header-n2935' class='md-header-anchor '></a>鼓励主动测试 </h3>
+    <h3><a name='header-n2936' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2937' class='md-header-anchor '></a>第14 章　紧急事故管理 </h3>
+    <h3><a name='header-n2938' class='md-header-anchor '></a>无流程管理的紧急事故 </h3>
+    <h3><a name='header-n2939' class='md-header-anchor '></a>对这次无流程管理的事故的剖析 </h3>
+    <h3><a name='header-n2940' class='md-header-anchor '></a>过于关注技术问题 </h3>
+    <h3><a name='header-n2941' class='md-header-anchor '></a>沟通不畅 </h3>
+    <h3><a name='header-n2942' class='md-header-anchor '></a>不请自来 </h3>
+    <h3><a name='header-n2943' class='md-header-anchor '></a>紧急事故的流程管理要素 </h3>
+    <h3><a name='header-n2944' class='md-header-anchor '></a>嵌套式职责分离 </h3>
+    <h3><a name='header-n2945' class='md-header-anchor '></a>控制中心 </h3>
+    <h3><a name='header-n2946' class='md-header-anchor '></a>实时事故状态文档 </h3>
+    <h3><a name='header-n2947' class='md-header-anchor '></a>明确公开的职责交接 </h3>
+    <h3><a name='header-n2948' class='md-header-anchor '></a>一次流程管理良好的事故 </h3>
+    <h3><a name='header-n2949' class='md-header-anchor '></a>什么时候对外宣布事故 </h3>
+    <h3><a name='header-n2950' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2951' class='md-header-anchor '></a>第15 章　事后总结：从失败中学习 </h3>
+    <h3><a name='header-n2952' class='md-header-anchor '></a>Google 的事后总结哲学 </h3>
+    <h3><a name='header-n2953' class='md-header-anchor '></a>协作和知识共享 </h3>
+    <h3><a name='header-n2954' class='md-header-anchor '></a>建立事后总结文化 </h3>
+    <h3><a name='header-n2955' class='md-header-anchor '></a>小结以及不断优化 </h3>
+    <h3><a name='header-n2956' class='md-header-anchor '></a>第16 章　跟踪故障 </h3>
+    <h3><a name='header-n2957' class='md-header-anchor '></a>Escalator </h3>
+    <h3><a name='header-n2958' class='md-header-anchor '></a>Outalator </h3>
+    <h3><a name='header-n2959' class='md-header-anchor '></a>聚合 </h3>
+    <h3><a name='header-n2960' class='md-header-anchor '></a>加标签 </h3>
+    <h3><a name='header-n2961' class='md-header-anchor '></a>分析 </h3>
+    <h3><a name='header-n2962' class='md-header-anchor '></a>未预料到的好处 </h3>
+    <h3><a name='header-n2963' class='md-header-anchor '></a>第17 章　测试可靠性 </h3>
+    <h3><a name='header-n2964' class='md-header-anchor '></a>软件测试的类型 </h3>
+    <h3><a name='header-n2965' class='md-header-anchor '></a>传统测试 </h3>
+    <h3><a name='header-n2966' class='md-header-anchor '></a>生产测试 </h3>
+    <h3><a name='header-n2967' class='md-header-anchor '></a>创造一个构建和测试环境 </h3>
+    <h3><a name='header-n2968' class='md-header-anchor '></a>大规模测试 </h3>
+    <h3><a name='header-n2969' class='md-header-anchor '></a>测试大规模使用的工具 </h3>
+    <h3><a name='header-n2970' class='md-header-anchor '></a>针对灾难的测试 </h3>
+    <h3><a name='header-n2971' class='md-header-anchor '></a>对速度的渴求 </h3>
+    <h3><a name='header-n2972' class='md-header-anchor '></a>发布到生产环境 </h3>
+    <h3><a name='header-n2973' class='md-header-anchor '></a>允许测试失败 </h3>
+    <h3><a name='header-n2974' class='md-header-anchor '></a>集成 </h3>
+    <h3><a name='header-n2975' class='md-header-anchor '></a>生产环境探针 </h3>
+    <h3><a name='header-n2976' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2977' class='md-header-anchor '></a>第18 章　SRE 部门中的软件工程实践 </h3>
+    <h3><a name='header-n2978' class='md-header-anchor '></a>为什么软件工程项目对SRE 很重要 </h3>
+    <h3><a name='header-n2979' class='md-header-anchor '></a>Auxon 案例分析：项目背景和要解决的问题 </h3>
+    <h3><a name='header-n2980' class='md-header-anchor '></a>传统的容量规划方法 </h3>
+    <h3><a name='header-n2981' class='md-header-anchor '></a>解决方案：基于意图的容量规划 </h3>
+    <h3><a name='header-n2982' class='md-header-anchor '></a>基于意图的容量规划 </h3>
+    <h3><a name='header-n2983' class='md-header-anchor '></a>表达产品意图的先导条件 </h3>
+    <h3><a name='header-n2984' class='md-header-anchor '></a>Auxon 简介 </h3>
+    <h3><a name='header-n2985' class='md-header-anchor '></a>需求和实现：成功和不足 </h3>
+    <h3><a name='header-n2986' class='md-header-anchor '></a>提升了解程度，推进采用率 </h3>
+    <h3><a name='header-n2987' class='md-header-anchor '></a>团队内部组成 </h3>
+    <h3><a name='header-n2988' class='md-header-anchor '></a>在SRE 团队中培养软件工程风气 </h3>
+    <h3><a name='header-n2989' class='md-header-anchor '></a>在SRE 团队中建立起软件工程氛围：招聘与开发时间 </h3>
+    <h3><a name='header-n2990' class='md-header-anchor '></a>做到这一点 </h3>
+    <h3><a name='header-n2991' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n2992' class='md-header-anchor '></a>第19 章　前端服务器的负载均衡 </h3>
+    <h3><a name='header-n2993' class='md-header-anchor '></a>有时候硬件并不能解决问题 </h3>
+    <h3><a name='header-n2994' class='md-header-anchor '></a>使用DNS 进行负载均衡 </h3>
+    <h3><a name='header-n2995' class='md-header-anchor '></a>负载均衡：虚拟IP </h3>
+    <h3><a name='header-n2996' class='md-header-anchor '></a>第20 章　数据中心内部的负载均衡系统 </h3>
+    <h3><a name='header-n2997' class='md-header-anchor '></a>理想情况 </h3>
+    <h3><a name='header-n2998' class='md-header-anchor '></a>识别异常任务：流速控制和跛脚鸭任务 </h3>
+    <h3><a name='header-n2999' class='md-header-anchor '></a>异常任务的简单应对办法：流速控制 </h3>
+    <h3><a name='header-n3000' class='md-header-anchor '></a>一个可靠的识别异常任务的方法：跛脚鸭状态 </h3>
+    <h3><a name='header-n3001' class='md-header-anchor '></a>利用划分子集限制连接池大小 </h3>
+    <h3><a name='header-n3002' class='md-header-anchor '></a>选择合适的子集 </h3>
+    <h3><a name='header-n3003' class='md-header-anchor '></a>子集选择算法一：随机选择 </h3>
+    <h3><a name='header-n3004' class='md-header-anchor '></a>子集选择算法二：确定性算法 </h3>
+    <h3><a name='header-n3005' class='md-header-anchor '></a>负载均衡策略 </h3>
+    <h3><a name='header-n3006' class='md-header-anchor '></a>简单轮询算法 </h3>
+    <h3><a name='header-n3007' class='md-header-anchor '></a>最闲轮询策略 </h3>
+    <h3><a name='header-n3008' class='md-header-anchor '></a>加权轮询策略 </h3>
+    <h3><a name='header-n3009' class='md-header-anchor '></a>第21 章　应对过载 </h3>
+    <h3><a name='header-n3010' class='md-header-anchor '></a>QPS 陷阱 </h3>
+    <h3><a name='header-n3011' class='md-header-anchor '></a>给每个用户设置限制 </h3>
+    <h3><a name='header-n3012' class='md-header-anchor '></a>客户端侧的节流机制 </h3>
+    <h3><a name='header-n3013' class='md-header-anchor '></a>重要性 </h3>
+    <h3><a name='header-n3014' class='md-header-anchor '></a>资源利用率信号 </h3>
+    <h3><a name='header-n3015' class='md-header-anchor '></a>处理过载错误 </h3>
+    <h3><a name='header-n3016' class='md-header-anchor '></a>决定何时重试 </h3>
+    <h3><a name='header-n3017' class='md-header-anchor '></a>连接造成的负载 </h3>
+    <h3><a name='header-n3018' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3019' class='md-header-anchor '></a>第22 章　处理连锁故障 </h3>
+    <h3><a name='header-n3020' class='md-header-anchor '></a>连锁故障产生的原因和如何从设计上避免 </h3>
+    <h3><a name='header-n3021' class='md-header-anchor '></a>服务器过载 </h3>
+    <h3><a name='header-n3022' class='md-header-anchor '></a>资源耗尽 </h3>
+    <h3><a name='header-n3023' class='md-header-anchor '></a>服务不可用 </h3>
+    <h3><a name='header-n3024' class='md-header-anchor '></a>防止软件服务器过载 </h3>
+    <h3><a name='header-n3025' class='md-header-anchor '></a>队列管理 </h3>
+    <h3><a name='header-n3026' class='md-header-anchor '></a>流量抛弃和优雅降级 </h3>
+    <h3><a name='header-n3027' class='md-header-anchor '></a>重试 </h3>
+    <h3><a name='header-n3028' class='md-header-anchor '></a>请求延迟和截止时间 </h3>
+    <h3><a name='header-n3029' class='md-header-anchor '></a>慢启动和冷缓存 </h3>
+    <h3><a name='header-n3030' class='md-header-anchor '></a>保持调用栈永远向下 </h3>
+    <h3><a name='header-n3031' class='md-header-anchor '></a>连锁故障的触发条件 </h3>
+    <h3><a name='header-n3032' class='md-header-anchor '></a>进程崩溃 </h3>
+    <h3><a name='header-n3033' class='md-header-anchor '></a>进程更新 </h3>
+    <h3><a name='header-n3034' class='md-header-anchor '></a>新的发布 </h3>
+    <h3><a name='header-n3035' class='md-header-anchor '></a>自然增长 </h3>
+    <h3><a name='header-n3036' class='md-header-anchor '></a>计划中或计划外的不可用 </h3>
+    <h3><a name='header-n3037' class='md-header-anchor '></a>连锁故障的测试 </h3>
+    <h3><a name='header-n3038' class='md-header-anchor '></a>测试直到出现故障，还要继续测试 </h3>
+    <h3><a name='header-n3039' class='md-header-anchor '></a>测试最常用的客户端 </h3>
+    <h3><a name='header-n3040' class='md-header-anchor '></a>测试非关键性后端 </h3>
+    <h3><a name='header-n3041' class='md-header-anchor '></a>解决连锁故障的立即步骤 </h3>
+    <h3><a name='header-n3042' class='md-header-anchor '></a>增加资源 </h3>
+    <h3><a name='header-n3043' class='md-header-anchor '></a>停止健康检查导致的任务死亡 </h3>
+    <h3><a name='header-n3044' class='md-header-anchor '></a>重启软件服务器 </h3>
+    <h3><a name='header-n3045' class='md-header-anchor '></a>丢弃流量 </h3>
+    <h3><a name='header-n3046' class='md-header-anchor '></a>进入降级模式 </h3>
+    <h3><a name='header-n3047' class='md-header-anchor '></a>消除批处理负载 </h3>
+    <h3><a name='header-n3048' class='md-header-anchor '></a>消除有害的流量 </h3>
+    <h3><a name='header-n3049' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3050' class='md-header-anchor '></a>第23 章　管理关键状态：利用分布式共识来提高可靠性 </h3>
+    <h3><a name='header-n3051' class='md-header-anchor '></a>使用共识系统的动力：分布式系统协调失败 </h3>
+    <h3><a name='header-n3052' class='md-header-anchor '></a>案例1 ：脑裂问题 </h3>
+    <h3><a name='header-n3053' class='md-header-anchor '></a>案例2 ：需要人工干预的灾备切换 </h3>
+    <h3><a name='header-n3054' class='md-header-anchor '></a>案例3 ：有问题的小组成员算法 </h3>
+    <h3><a name='header-n3055' class='md-header-anchor '></a>分布式共识是如何工作的 </h3>
+    <h3><a name='header-n3056' class='md-header-anchor '></a>Paxos 概要：协议示例 </h3>
+    <h3><a name='header-n3057' class='md-header-anchor '></a>分布式共识的系统架构模式 </h3>
+    <h3><a name='header-n3058' class='md-header-anchor '></a>可靠的复制状态机 </h3>
+    <h3><a name='header-n3059' class='md-header-anchor '></a>可靠的复制数据存储和配置存储 </h3>
+    <h3><a name='header-n3060' class='md-header-anchor '></a>使用领头人选举机制实现高可用的处理系统 </h3>
+    <h3><a name='header-n3061' class='md-header-anchor '></a>分布式协调和锁服务 </h3>
+    <h3><a name='header-n3062' class='md-header-anchor '></a>可靠的分布式队列和消息传递 </h3>
+    <h3><a name='header-n3063' class='md-header-anchor '></a>分布式共识系统的性能问题 </h3>
+    <h3><a name='header-n3064' class='md-header-anchor '></a>复合式Paxos ：消息流过程详解 </h3>
+    <h3><a name='header-n3065' class='md-header-anchor '></a>应对大量的读操作 </h3>
+    <h3><a name='header-n3066' class='md-header-anchor '></a>法定租约 </h3>
+    <h3><a name='header-n3067' class='md-header-anchor '></a>分布式共识系统的性能与网络延迟 </h3>
+    <h3><a name='header-n3068' class='md-header-anchor '></a>快速Paxos 协议：性能优化 </h3>
+    <h3><a name='header-n3069' class='md-header-anchor '></a>稳定的领头人机制 </h3>
+    <h3><a name='header-n3070' class='md-header-anchor '></a>批处理 </h3>
+    <h3><a name='header-n3071' class='md-header-anchor '></a>磁盘访问 </h3>
+    <h3><a name='header-n3072' class='md-header-anchor '></a>分布式共识系统的部署 </h3>
+    <h3><a name='header-n3073' class='md-header-anchor '></a>副本的数量 </h3>
+    <h3><a name='header-n3074' class='md-header-anchor '></a>副本的位置 </h3>
+    <h3><a name='header-n3075' class='md-header-anchor '></a>容量规划和负载均衡 </h3>
+    <h3><a name='header-n3076' class='md-header-anchor '></a>对分布式共识系统的监控 </h3>
+    <h3><a name='header-n3077' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3078' class='md-header-anchor '></a>第24 章　分布式周期性任务系统 </h3>
+    <h3><a name='header-n3079' class='md-header-anchor '></a>Cron </h3>
+    <h3><a name='header-n3080' class='md-header-anchor '></a>介绍 </h3>
+    <h3><a name='header-n3081' class='md-header-anchor '></a>可靠性 </h3>
+    <h3><a name='header-n3082' class='md-header-anchor '></a>Cron 任务和幂等性 </h3>
+    <h3><a name='header-n3083' class='md-header-anchor '></a>大规模Cron 系统 </h3>
+    <h3><a name='header-n3084' class='md-header-anchor '></a>对基础设施的扩展 </h3>
+    <h3><a name='header-n3085' class='md-header-anchor '></a>对需求的扩展 </h3>
+    <h3><a name='header-n3086' class='md-header-anchor '></a>Google Cron 系统的构建过程 </h3>
+    <h3><a name='header-n3087' class='md-header-anchor '></a>跟踪Cron 任务的状态 </h3>
+    <h3><a name='header-n3088' class='md-header-anchor '></a>Paxos 协议的使用 </h3>
+    <h3><a name='header-n3089' class='md-header-anchor '></a>领头人角色和追随者角色 </h3>
+    <h3><a name='header-n3090' class='md-header-anchor '></a>保存状态 </h3>
+    <h3><a name='header-n3091' class='md-header-anchor '></a>运维大型Cron 系统 </h3>
+    <h3><a name='header-n3092' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3093' class='md-header-anchor '></a>第25 章　数据处理流水线 </h3>
+    <h3><a name='header-n3094' class='md-header-anchor '></a>流水线设计模式的起源 </h3>
+    <h3><a name='header-n3095' class='md-header-anchor '></a>简单流水线设计模式与大数据 </h3>
+    <h3><a name='header-n3096' class='md-header-anchor '></a>周期性流水线模式的挑战 </h3>
+    <h3><a name='header-n3097' class='md-header-anchor '></a>工作分发不均造成的问题 </h3>
+    <h3><a name='header-n3098' class='md-header-anchor '></a>分布式环境中周期性数据流水线的缺点 </h3>
+    <h3><a name='header-n3099' class='md-header-anchor '></a>监控周期性流水线的问题 </h3>
+    <h3><a name='header-n3100' class='md-header-anchor '></a>惊群效应 </h3>
+    <h3><a name='header-n3101' class='md-header-anchor '></a>摩尔负载模式 </h3>
+    <h3><a name='header-n3102' class='md-header-anchor '></a>Google Workflow 简介 </h3>
+    <h3><a name='header-n3103' class='md-header-anchor '></a>Workflow 是模型—视图—控制器（MVC）模式 </h3>
+    <h3><a name='header-n3104' class='md-header-anchor '></a>Workflow 中的执行阶段 </h3>
+    <h3><a name='header-n3105' class='md-header-anchor '></a>Workflow 正确性保障 </h3>
+    <h3><a name='header-n3106' class='md-header-anchor '></a>保障业务的持续性 </h3>
+    <h3><a name='header-n3107' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3108' class='md-header-anchor '></a>第26 章　数据完整性：读写一致 </h3>
+    <h3><a name='header-n3109' class='md-header-anchor '></a>数据完整性的强需求 </h3>
+    <h3><a name='header-n3110' class='md-header-anchor '></a>提供超高的数据完整性的策略 </h3>
+    <h3><a name='header-n3111' class='md-header-anchor '></a>备份与存档 </h3>
+    <h3><a name='header-n3112' class='md-header-anchor '></a>云计算环境下的需求 </h3>
+    <h3><a name='header-n3113' class='md-header-anchor '></a>保障数据完整性和可用性：Google SRE 的目标 </h3>
+    <h3><a name='header-n3114' class='md-header-anchor '></a>数据完整性是手段，数据可用性是目标 </h3>
+    <h3><a name='header-n3115' class='md-header-anchor '></a>交付一个恢复系统，而非备份系统 </h3>
+    <h3><a name='header-n3116' class='md-header-anchor '></a>造成数据丢失的事故类型 </h3>
+    <h3><a name='header-n3117' class='md-header-anchor '></a>维护数据完整性的深度和广度的困难之处 </h3>
+    <h3><a name='header-n3118' class='md-header-anchor '></a>Google SRE 保障数据完整性的手段 </h3>
+    <h3><a name='header-n3119' class='md-header-anchor '></a>24 种数据完整性的事故组合 </h3>
+    <h3><a name='header-n3120' class='md-header-anchor '></a>第一层：软删除 </h3>
+    <h3><a name='header-n3121' class='md-header-anchor '></a>第二层：备份和相关的恢复方法 </h3>
+    <h3><a name='header-n3122' class='md-header-anchor '></a>额外一层：复制机制 </h3>
+    <h3><a name='header-n3123' class='md-header-anchor '></a>1T vs. 1E ：存储更多数据没那么简单 </h3>
+    <h3><a name='header-n3124' class='md-header-anchor '></a>第三层：早期预警 </h3>
+    <h3><a name='header-n3125' class='md-header-anchor '></a>确保数据恢复策略可以正常工作 </h3>
+    <h3><a name='header-n3126' class='md-header-anchor '></a>案例分析 </h3>
+    <h3><a name='header-n3127' class='md-header-anchor '></a>Gmail—2011 年2 月：从GTape 上恢复数据（磁带） </h3>
+    <h3><a name='header-n3128' class='md-header-anchor '></a>Google Music—2012 年3 月：一次意外删除事故的检测过程 </h3>
+    <h3><a name='header-n3129' class='md-header-anchor '></a>SRE 的基本理念在数据完整性上的应用 </h3>
+    <h3><a name='header-n3130' class='md-header-anchor '></a>保持初学者的心态 </h3>
+    <h3><a name='header-n3131' class='md-header-anchor '></a>信任但要验证 </h3>
+    <h3><a name='header-n3132' class='md-header-anchor '></a>xxvi ｜</h3>
+    <h3><a name='header-n3133' class='md-header-anchor '></a>不要一厢情愿 </h3>
+    <h3><a name='header-n3134' class='md-header-anchor '></a>纵深防御 </h3>
+    <h3><a name='header-n3135' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3136' class='md-header-anchor '></a>第27 章　可靠地进行产品的大规模发布 </h3>
+    <h3><a name='header-n3137' class='md-header-anchor '></a>发布协调工程师 </h3>
+    <h3><a name='header-n3138' class='md-header-anchor '></a>发布协调工程师的角色 </h3>
+    <h3><a name='header-n3139' class='md-header-anchor '></a>建立发布流程 </h3>
+    <h3><a name='header-n3140' class='md-header-anchor '></a>发布检查列表 </h3>
+    <h3><a name='header-n3141' class='md-header-anchor '></a>推动融合和简化 </h3>
+    <h3><a name='header-n3142' class='md-header-anchor '></a>发布未知的产品 </h3>
+    <h3><a name='header-n3143' class='md-header-anchor '></a>起草一个发布检查列表 </h3>
+    <h3><a name='header-n3144' class='md-header-anchor '></a>架构与依赖 </h3>
+    <h3><a name='header-n3145' class='md-header-anchor '></a>集成 </h3>
+    <h3><a name='header-n3146' class='md-header-anchor '></a>容量规划 </h3>
+    <h3><a name='header-n3147' class='md-header-anchor '></a>故障模式 </h3>
+    <h3><a name='header-n3148' class='md-header-anchor '></a>客户端行为 </h3>
+    <h3><a name='header-n3149' class='md-header-anchor '></a>流程与自动化 </h3>
+    <h3><a name='header-n3150' class='md-header-anchor '></a>开发流程 </h3>
+    <h3><a name='header-n3151' class='md-header-anchor '></a>外部依赖 </h3>
+    <h3><a name='header-n3152' class='md-header-anchor '></a>发布计划 </h3>
+    <h3><a name='header-n3153' class='md-header-anchor '></a>可靠发布所需要的方法论 </h3>
+    <h3><a name='header-n3154' class='md-header-anchor '></a>灰度和阶段性发布 </h3>
+    <h3><a name='header-n3155' class='md-header-anchor '></a>功能开关框架 </h3>
+    <h3><a name='header-n3156' class='md-header-anchor '></a>应对客户端滥用行为 </h3>
+    <h3><a name='header-n3157' class='md-header-anchor '></a>过载行为和压力测试 </h3>
+    <h3><a name='header-n3158' class='md-header-anchor '></a>LCE 的发展 </h3>
+    <h3><a name='header-n3159' class='md-header-anchor '></a>LCE 检查列表的变迁 </h3>
+    <h3><a name='header-n3160' class='md-header-anchor '></a>LCE 没有解决的问题 </h3>
+    <h3><a name='header-n3161' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3162' class='md-header-anchor '></a>第Ⅳ部分</h3>
+    <h3><a name='header-n3163' class='md-header-anchor '></a>第28 章　迅速培养SRE 加入on-call </h3>
+    <h3><a name='header-n3164' class='md-header-anchor '></a>新的SRE 已经招聘到了，接下来怎么办 </h3>
+    <h3><a name='header-n3165' class='md-header-anchor '></a>培训初期：重体系，而非混乱 </h3>
+    <h3><a name='header-n3166' class='md-header-anchor '></a>系统性、累积型的学习方式 </h3>
+    <h3><a name='header-n3167' class='md-header-anchor '></a>目标性强的项目工作，而非琐事 </h3>
+    <h3><a name='header-n3168' class='md-header-anchor '></a>培养反向工程能力和随机应变能力 </h3>
+    <h3><a name='header-n3169' class='md-header-anchor '></a>反向工程：弄明白系统如何工作 </h3>
+    <h3><a name='header-n3170' class='md-header-anchor '></a>统计学和比较性思维：在压力下坚持科学方法论 </h3>
+    <h3><a name='header-n3171' class='md-header-anchor '></a>随机应变的能力：当意料之外的事情发生时怎么办 </h3>
+    <h3><a name='header-n3172' class='md-header-anchor '></a>将知识串联起来：反向工程某个生产环境服务 </h3>
+    <h3><a name='header-n3173' class='md-header-anchor '></a>有抱负的on-call 工程师的5 个特点 </h3>
+    <h3><a name='header-n3174' class='md-header-anchor '></a>对事故的渴望：事后总结的阅读和书写 </h3>
+    <h3><a name='header-n3175' class='md-header-anchor '></a>故障处理分角色演习 </h3>
+    <h3><a name='header-n3176' class='md-header-anchor '></a>破坏真的东西，并且修复它们 </h3>
+    <h3><a name='header-n3177' class='md-header-anchor '></a>维护文档是学徒任务的一部分 </h3>
+    <h3><a name='header-n3178' class='md-header-anchor '></a>尽早、尽快见习on-call </h3>
+    <h3><a name='header-n3179' class='md-header-anchor '></a>on-call 之后：通过培训的仪式感，以及日后的持续教育 </h3>
+    <h3><a name='header-n3180' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3181' class='md-header-anchor '></a>第29 章　处理中断性任务 </h3>
+    <h3><a name='header-n3182' class='md-header-anchor '></a>管理运维负载 </h3>
+    <h3><a name='header-n3183' class='md-header-anchor '></a>如何决策对中断性任务的处理策略 </h3>
+    <h3><a name='header-n3184' class='md-header-anchor '></a>不完美的机器 </h3>
+    <h3><a name='header-n3185' class='md-header-anchor '></a>流状态 </h3>
+    <h3><a name='header-n3186' class='md-header-anchor '></a>将一件事情做好 </h3>
+    <h3><a name='header-n3187' class='md-header-anchor '></a>实际一点的建议 </h3>
+    <h3><a name='header-n3188' class='md-header-anchor '></a>减少中断 </h3>
+    <h3><a name='header-n3189' class='md-header-anchor '></a>第30 章　通过嵌入SRE 的方式帮助团队从运维过载中恢复 </h3>
+    <h3><a name='header-n3190' class='md-header-anchor '></a>第一阶段：了解服务，了解上下文 </h3>
+    <h3><a name='header-n3191' class='md-header-anchor '></a>确定最大的压力来源 </h3>
+    <h3><a name='header-n3192' class='md-header-anchor '></a>找到导火索 </h3>
+    <h3><a name='header-n3193' class='md-header-anchor '></a>第二阶段：分享背景知识 </h3>
+    <h3><a name='header-n3194' class='md-header-anchor '></a>书写一个好的事后总结作为示范 </h3>
+    <h3><a name='header-n3195' class='md-header-anchor '></a>将紧急事件按类型排序 </h3>
+    <h3><a name='header-n3196' class='md-header-anchor '></a>第三阶段：主导改变 </h3>
+    <h3><a name='header-n3197' class='md-header-anchor '></a>从基础开始 </h3>
+    <h3><a name='header-n3198' class='md-header-anchor '></a>获取团队成员的帮助 </h3>
+    <h3><a name='header-n3199' class='md-header-anchor '></a>解释你的逻辑推理过程 </h3>
+    <h3><a name='header-n3200' class='md-header-anchor '></a>提出引导性问题 </h3>
+    <h3><a name='header-n3201' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3202' class='md-header-anchor '></a>第 31 章　SRE 与其他团队的沟通与协作 </h3>
+    <h3><a name='header-n3203' class='md-header-anchor '></a>沟通：生产会议 </h3>
+    <h3><a name='header-n3204' class='md-header-anchor '></a>议程 </h3>
+    <h3><a name='header-n3205' class='md-header-anchor '></a>出席人员 </h3>
+    <h3><a name='header-n3206' class='md-header-anchor '></a>SRE 的内部协作 </h3>
+    <h3><a name='header-n3207' class='md-header-anchor '></a>团队构成 </h3>
+    <h3><a name='header-n3208' class='md-header-anchor '></a>高效工作的技术 </h3>
+    <h3><a name='header-n3209' class='md-header-anchor '></a>SRE 内部的协作案例分析：Viceroy </h3>
+    <h3><a name='header-n3210' class='md-header-anchor '></a>Viceroy 的诞生 </h3>
+    <h3><a name='header-n3211' class='md-header-anchor '></a>所面临的挑战 </h3>
+    <h3><a name='header-n3212' class='md-header-anchor '></a>建议 </h3>
+    <h3><a name='header-n3213' class='md-header-anchor '></a>SRE 与其他部门之间的协作 </h3>
+    <h3><a name='header-n3214' class='md-header-anchor '></a>案例分析：将DFP 迁移到F1 </h3>
+    <h3><a name='header-n3215' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3216' class='md-header-anchor '></a>第32 章　SRE 参与模式的演进历程 </h3>
+    <h3><a name='header-n3217' class='md-header-anchor '></a>SRE 参与模式：是什么、怎么样以及为什么 </h3>
+    <h3><a name='header-n3218' class='md-header-anchor '></a>PRR 模型 </h3>
+    <h3><a name='header-n3219' class='md-header-anchor '></a>SRE 参与模型 </h3>
+    <h3><a name='header-n3220' class='md-header-anchor '></a>替代性支持 </h3>
+    <h3><a name='header-n3221' class='md-header-anchor '></a>PRR ：简单PRR 模型 </h3>
+    <h3><a name='header-n3222' class='md-header-anchor '></a>参与 </h3>
+    <h3><a name='header-n3223' class='md-header-anchor '></a>分析 </h3>
+    <h3><a name='header-n3224' class='md-header-anchor '></a>改进和重构 </h3>
+    <h3><a name='header-n3225' class='md-header-anchor '></a>培训 </h3>
+    <h3><a name='header-n3226' class='md-header-anchor '></a>“接手”服务 </h3>
+    <h3><a name='header-n3227' class='md-header-anchor '></a>持续改进 </h3>
+    <h3><a name='header-n3228' class='md-header-anchor '></a>简单PRR 模型的演进：早期参与模型 </h3>
+    <h3><a name='header-n3229' class='md-header-anchor '></a>早期参与模型的适用对象 </h3>
+    <h3><a name='header-n3230' class='md-header-anchor '></a>早期参与模型的优势 </h3>
+    <h3><a name='header-n3231' class='md-header-anchor '></a>不断发展的服务：框架和SRE 平台 </h3>
+    <h3><a name='header-n3232' class='md-header-anchor '></a>经验教训 </h3>
+    <h3><a name='header-n3233' class='md-header-anchor '></a>影响SRE 的外部因素 </h3>
+    <h3><a name='header-n3234' class='md-header-anchor '></a>结构化的解决方案：框架 </h3>
+    <h3><a name='header-n3235' class='md-header-anchor '></a>新服务和管理优势 </h3>
+    <h3><a name='header-n3236' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3237' class='md-header-anchor '></a>第Ⅴ部分　</h3>
+    <h3><a name='header-n3238' class='md-header-anchor '></a>第33 章　其他行业的实践经验 </h3>
+    <h3><a name='header-n3239' class='md-header-anchor '></a>有其他行业背景的资深SRE </h3>
+    <h3><a name='header-n3240' class='md-header-anchor '></a>灾难预案与演习 </h3>
+    <h3><a name='header-n3241' class='md-header-anchor '></a>从组织架构层面坚持不懈地对安全进行关注 </h3>
+    <h3><a name='header-n3242' class='md-header-anchor '></a>关注任何细节 </h3>
+    <h3><a name='header-n3243' class='md-header-anchor '></a>冗余容量 </h3>
+    <h3><a name='header-n3244' class='md-header-anchor '></a>模拟以及进行线上灾难演习 </h3>
+    <h3><a name='header-n3245' class='md-header-anchor '></a>培训与考核 </h3>
+    <h3><a name='header-n3246' class='md-header-anchor '></a>对详细的需求收集和系统设计的关注 </h3>
+    <h3><a name='header-n3247' class='md-header-anchor '></a>纵深防御 </h3>
+    <h3><a name='header-n3248' class='md-header-anchor '></a>事后总结的文化 </h3>
+    <h3><a name='header-n3249' class='md-header-anchor '></a>将重复性工作自动化，消除运维负载 </h3>
+    <h3><a name='header-n3250' class='md-header-anchor '></a>结构化和理性的决策 </h3>
+    <h3><a name='header-n3251' class='md-header-anchor '></a>小结 </h3>
+    <h3><a name='header-n3252' class='md-header-anchor '></a>第34 章　结语 </h3>
+    <h3><a name='header-n3253' class='md-header-anchor '></a>附录A　系统可用性 </h3>
+    <h3><a name='header-n3254' class='md-header-anchor '></a>附录B　生产环境运维过程中的最佳实践 </h3>
+    <h3><a name='header-n3255' class='md-header-anchor '></a>附录C　事故状态文档示范 </h3>
+    <h3><a name='header-n3256' class='md-header-anchor '></a>附录D　事后总结示范 </h3>
+    <h3><a name='header-n3257' class='md-header-anchor '></a>附录E　发布协调检查列表 </h3>
+    <h3><a name='header-n3258' class='md-header-anchor '></a>附录F　生产环境会议记录示范 </h3>
+    <h3><a name='header-n3259' class='md-header-anchor '></a>参考文献 </h3>
+    <h3><a name='header-n3260' class='md-header-anchor '></a>索引 </h3>
+
+</div>
+
+
+
+</body>
+</html>
